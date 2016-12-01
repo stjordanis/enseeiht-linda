@@ -7,35 +7,66 @@ import java.util.Collection;
  */
 public class LindaMemoirePartagee implements Linda {
 
-	
+	private List<Tuple> tuples;
+	private Lock moniteur;
+	private Map<Tuple, Condition> attente;
+
+	public LindaMemoirePartagee(){
+		tuples = new ArrayList<Tuple>();
+		attente = new HashMap<Tuple, Condition>();
+	}
 
     /** Adds a tuple t to the tuplespace. */
     public void write(Tuple t){
-
+		tuples.add(t);
+		cond.signal();
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Blocks if no corresponding tuple is found. */
     public Tuple take(Tuple template){
-
+		Tuple res = read(template);
+		//moniteur.lock();
+		tuples.remove(res);
+		//moniteur.unlock();
+		return res;
 	}
 
     /** Returns a tuple matching the template and leaves it in the tuplespace.
      * Blocks if no corresponding tuple is found. */
     public Tuple read(Tuple template){
-
+		//moniteur.lock();
+		if(tryRead(template) == null){
+			attente.add(template, new Condition());
+		}
+		while(tryRead(template) == null){
+			attente.get(template).await();
+		}
+		
+		cond.signal();
+		//moniteur.unlock();
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Returns null if none found. */
     public Tuple tryTake(Tuple template){
-
+		Tuple res = tryRead(template);
+		if(res != null){
+			tuples.remove(res);
+		}
+		return res;
 	}
 
     /** Returns a tuple matching the template and leaves it in the tuplespace.
      * Returns null if none found. */
     public Tuple tryRead(Tuple template){
-
+		Tuple res = null;
+		for(Tuple t : tuples){
+			if(t.matches(template)){
+				res = t;
+			}
+		}
+		return res;
 	}
 
     /** Returns all the tuples matching the template and removes them from the tuplespace.

@@ -68,7 +68,7 @@ public class LindaTryTakeTest {
 	}
 	
 	@Test
-	public void testTryTakeBlock() throws InterruptedException {
+	public void testTryTakeDontBlock() throws InterruptedException {
         Thread th = 
     	        new Thread() {
     	            public void run() {

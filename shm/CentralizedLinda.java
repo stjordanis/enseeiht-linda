@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import LindaMemoirePartagee.eventMode;
-import LindaMemoirePartagee.eventTiming;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
@@ -31,10 +31,7 @@ public class CentralizedLinda implements Linda {
     	moniteur.lock();
 		tuples.add(t);
 		moniteur.unlock();
-		Condition c = getMatchingCondition(t);
-		if(c != null){
-			c.signal();
-		}
+		signalMatching();
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
@@ -50,16 +47,20 @@ public class CentralizedLinda implements Linda {
     /** Returns a tuple matching the template and leaves it in the tuplespace.
      * Blocks if no corresponding tuple is found. */
     public Tuple read(Tuple template){
+		Tuple res = null;
 		moniteur.lock();
-		while(tryRead(template) == null){
+		while((res = tryRead(template)) == null){
 			if(attente.get(template) == null){
-				attente.add(template, moniteur.newCondition());
+				attente.put(template, moniteur.newCondition());
 			}
-			attente.get(template).await();
+			try{
+				attente.get(template).await();
+			}catch(Exception e){}
 		}
 		attente.remove(template);
-		cond.signal();
+		signalMatching();
 		moniteur.unlock();
+		return res;
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
@@ -118,9 +119,6 @@ public class CentralizedLinda implements Linda {
 		return res;
 	}
 
-    public enum eventMode { READ, TAKE };
-    public enum eventTiming { IMMEDIATE, FUTURE };
-
     /** Registers a callback which will be called when a tuple matching the template appears.
      * If the mode is Take, the found tuple is removed from the tuplespace.
      * The callback is fired once. It may re-register itself if necessary.
@@ -135,7 +133,7 @@ public class CentralizedLinda implements Linda {
      * @param callback the callback to call if a matching tuple appears.
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback){
-
+		int i = 0;
 	}
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
@@ -145,13 +143,15 @@ public class CentralizedLinda implements Linda {
 		}
 	}
     
-    private Condition getMatchingCondition(Tuple t){
+    private Condition signalMatching(){
     	Condition res = null;
     	moniteur.lock();
-    	for(Tuple template : attentes.getEntryKeys()){
-    		if(t.matches(template)){
-    			res = attentes.get(template);
-    		}
+		for(Tuple t : tuples){
+			for(Tuple template : attente.keySet()){
+				if(t.matches(template)){
+					res = attente.get(template);
+				}
+			}
     	}
     	moniteur.unlock();
     	return res;

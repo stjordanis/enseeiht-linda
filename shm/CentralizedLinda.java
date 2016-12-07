@@ -31,14 +31,14 @@ public class CentralizedLinda implements Linda {
     	moniteur.lock();
 		tuples.add(t);
 		moniteur.unlock();
-		signalMatching();
+		signalNewTuple(t);
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Blocks if no corresponding tuple is found. */
     public Tuple take(Tuple template){
-		Tuple res = read(template);
 		moniteur.lock();
+		Tuple res = read(template);
 		tuples.remove(res);
 		moniteur.unlock();
 		return res;
@@ -49,16 +49,10 @@ public class CentralizedLinda implements Linda {
     public Tuple read(Tuple template){
 		Tuple res = null;
 		moniteur.lock();
-		while((res = tryRead(template)) == null){
-			if(attente.get(template) == null){
-				attente.put(template, moniteur.newCondition());
-			}
-			try{
-				attente.get(template).await();
-			}catch(Exception e){}
+		res = tryRead(template);
+		while(res == null){
+			res = waitFor(template);
 		}
-		attente.remove(template);
-		signalMatching();
 		moniteur.unlock();
 		return res;
 	}
@@ -66,12 +60,12 @@ public class CentralizedLinda implements Linda {
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Returns null if none found. */
     public Tuple tryTake(Tuple template){
+    	moniteur.lock();
 		Tuple res = tryRead(template);
 		if(res != null){
-			moniteur.lock();
 			tuples.remove(res);
-			moniteur.unlock();
 		}
+		moniteur.unlock();
 		return res;
 	}
 
@@ -133,7 +127,25 @@ public class CentralizedLinda implements Linda {
      * @param callback the callback to call if a matching tuple appears.
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback){
-		int i = 0;
+    	new Thread() {
+            public void run() {
+            	Tuple t = null;
+            	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
+            		t = read(template);
+            	}else if(mode == eventMode.READ && timing == eventTiming.FUTURE){
+            		t = waitFor(template);
+            	}else if(mode == eventMode.TAKE && timing == eventTiming.IMMEDIATE){
+            		t = take(template);
+            	}else if(mode == eventMode.TAKE && timing == eventTiming.FUTURE){
+            		moniteur.lock();
+            		t = waitFor(template);
+            		tuples.remove(t);
+            		moniteur.unlock();
+            	}
+                callback.call(t);
+            }
+        }.start();
+    	
 	}
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
@@ -143,18 +155,60 @@ public class CentralizedLinda implements Linda {
 		}
 	}
     
-    private Condition signalMatching(){
+    private void signalNewTuple(Tuple t){
     	Condition res = null;
     	moniteur.lock();
-		for(Tuple t : tuples){
-			for(Tuple template : attente.keySet()){
-				if(t.matches(template)){
-					res = attente.get(template);
-				}
+		for(Tuple template : attente.keySet()){
+			if(t.matches(template)){
+				res = attente.get(template);
 			}
-    	}
+		}
+		if(res != null){
+			res.signal();
+		}
     	moniteur.unlock();
-    	return res;
+    }
+    
+    private Tuple waitFor(Tuple template){
+    	moniteur.lock();
+    	if(attente.get(template) == null){
+    		attente.put(template, moniteur.newCondition());
+    	}
+		try{
+			attente.get(template).await();
+		}catch(Exception e){}
+		//attente.remove(template);
+		signalNewTuple(template);
+    	moniteur.unlock();
+    	return null;
     }
 
+    private class WaitingList {
+    	
+    	private Map<Tuple, Condition> cond;
+    	private Map<Tuple, Integer> nbAttente;
+    	
+    	public WaitingList(){
+    		cond = new HashMap<Tuple, Condition>();
+    		nbAttente = new HashMap<Tuple, Integer>();
+    	}
+    	
+    	public void add(Tuple t){
+    		if(nbAttente.get(t) == null){
+    			cond.put(t, moniteur.newCondition());
+    			nbAttente.put(t, 1);
+    		}else{
+    			nbAttente.put(t, nbAttente.get(t) + 1);
+    		}
+    	}
+    	
+    	public void remove(Tuple t){
+    		if(nbAttente.get(t) > 1){
+    			nbAttente.put(t, nbAttente.get(t) - 1);
+    		}else{
+    			cond.remove(t);
+    			nbAttente.remove(t);
+    		}
+    	}
+    }
 }

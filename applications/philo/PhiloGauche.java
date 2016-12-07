@@ -1,12 +1,13 @@
 // Time-stamp: <08 déc 2009 08:30 queinnec@enseeiht.fr>
 
 import java.util.concurrent.Semaphore;
+import linda.test.*
 
 public class PhiloGauche implements StrategiePhilo {
 
     /****************************************************************/
 
-    Semaphore[] fourchettes;
+    SemaphoreLinda[] fourchettes;
 
     public PhiloGauche (int nbPhilosophes) {
         fourchettes = new Semaphore[nbPhilosophes];

@@ -2,6 +2,11 @@ package linda.test;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Ignore;
@@ -69,7 +74,24 @@ public class LindaWriteTest {
 		} catch (Exception e) {
 			;
 		}
-		// TODO : Verifier que rien n'a été enregistré sur le serveur
-		
+		// Verifier que rien n'a été enregistré sur le serveur
+	    PrintStream origOut = System.out;
+	    
+	    // Start capturing
+	    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	    System.setOut(new PrintStream(buffer));
+
+	    // Run debug, which is supposed to output something
+	    linda.debug(null);
+
+	    // Stop capturing
+	    System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+
+	    // Use captured content
+	    String debug = buffer.toString();
+	    buffer.reset();
+	    assertTrue(debug.equals(""));
+	    
+	    System.setOut(origOut);
 	}
 }

@@ -9,7 +9,6 @@ public class SemaphoreLinda {
 	
 	public SemaphoreLinda(Integer nbJetons) {
 		linda = new linda.shm.CentralizedLinda();	
-        // Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
 		
 		t = new Tuple();
 		
@@ -27,6 +26,6 @@ public class SemaphoreLinda {
 	}
 	
 	public void P() {
-		linda.write(t);
+		linda.take(t);
 	}
 }

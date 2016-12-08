@@ -3,56 +3,54 @@ package linda.test;
 import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.After;
+import org.junit.Before;
 
 import linda.*;
 
 public class LindaReadTest {
-	private Linda linda;
-	private Tuple motif;
-	private Tuple tuple;
-	private Tuple tupleVide;
-	
+	private static Linda linda;
+	private static Tuple motif;
+	private static Tuple tuple;
+	private static Tuple tupleVide;
 	
 	@BeforeClass
-	public void setUpBeforeClass() throws Exception {
-		linda = new linda.shm.CentralizedLinda();	
-        // Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
-		
+	public static void setUpBeforeClass() throws Exception {
 		motif = new Tuple(Character.class, String.class, Integer.class);
 		tuple = new Tuple('a', "toto", 4);
 		tupleVide = new Tuple();
 	}
 
-	@After
-	public void cleanUp() {
-		linda.takeAll(motif);
-		linda.takeAll(tupleVide);
+	@Before
+	public void setUp() {
+		linda = new linda.tshm.CentralizedLinda();
+		// linda = new linda.shm.CentralizedLinda();	
+        // linda = new linda.server.LindaClient("//localhost:4000/aaa");
 	}
 	
 	@Test
 	public void testReadTuple() {
 		linda.write(tuple);
-		assertTrue(linda.read(tuple).equals(tuple));
+		assertEquals(linda.read(tuple),tuple);
 	}
 
 	@Test
 	public void testReadMotif1() {
 		linda.write(tuple);
-		assertTrue(linda.read(motif).equals(tuple));
+		assertEquals(linda.read(motif), tuple);
 	}
 	
 	@Test
 	public void testReadMotif2() {
 		linda.write(motif);
-		assertTrue(linda.read(motif).equals(motif));
+		assertEquals(linda.read(motif), motif);
 	}
 	
 	@Test
 	public void testReadVide() {
 		linda.write(tupleVide);
-		assertTrue(linda.read(tupleVide).equals(tupleVide));
+		assertEquals(linda.read(tupleVide), tupleVide);
 	}
 	
 	@Test
@@ -75,8 +73,8 @@ public class LindaReadTest {
     	            }
     	        };
             th.start();
-            Thread.sleep(2);
-            assertTrue(th.getState() == Thread.State.BLOCKED);
+            Thread.sleep(200);
+            assertEquals(th.getState(),Thread.State.WAITING);
 	}
 
 	@Test
@@ -85,21 +83,21 @@ public class LindaReadTest {
     	        new Thread() {
     	            public void run() {
     	                try {
-    	                    assertTrue(linda.read(new Tuple(motif)).equals(tuple));
+    	                	linda.read(motif);
+    	                    //assertTrue(linda.read(new Tuple(motif)).equals(tuple));
     	                } catch (Exception e) {
     	                    ;
     	                }
     	            }
     	        };
             th.start();
-            Thread.sleep(2);
+            Thread.sleep(100);
             linda.write(tuple);
-            Thread.sleep(2);
-            assertTrue(th.getState() == Thread.State.TERMINATED);
+            Thread.sleep(100);
+            assertEquals(th.getState(), Thread.State.TERMINATED);
 	}
 	
-	// TODO : verifier que l'exception renvoyée est bien censé être NullPointerException
-	@Test(expected=NullPointerException.class)
+	@Test(timeout=1000, expected=NullPointerException.class)
 	public void testReadNullThrowsException() {
 		linda.read(null);
 	}
@@ -117,7 +115,7 @@ public class LindaReadTest {
 	            }
 	        };
         th.start();
-        Thread.sleep(2);
-        assertTrue(th.getState() == Thread.State.TERMINATED);
+        Thread.sleep(100);
+        assertEquals(th.getState(), Thread.State.TERMINATED);
 	}
 }

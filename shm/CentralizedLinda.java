@@ -5,10 +5,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import linda.AsynchronousCallback;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
@@ -16,22 +19,31 @@ import linda.Tuple;
 /** Shared memory implementation of Linda. */
 public class CentralizedLinda implements Linda {
 	
+	private final int QUEUE_SIZE = 10;
+	
 	private List<Tuple> tuples;
 	private Lock moniteur;
-	private Map<Tuple, Condition> attente;
+	private Map<Tuple, BlockingQueue<Condition>> waitingReads, waitingTakes;
+	private Map<Tuple, BlockingQueue<Callback>> waitingReadCallbacks, waitingTakeCallbacks;
 
 	public CentralizedLinda(){
 		tuples = new ArrayList<Tuple>();
-		attente = new HashMap<Tuple, Condition>();
+		waitingReads = new HashMap<Tuple, BlockingQueue<Condition>>();
+		waitingTakes = new HashMap<Tuple, BlockingQueue<Condition>>();
+		waitingReadCallbacks = new HashMap<Tuple, BlockingQueue<Callback>>();
+		waitingTakeCallbacks = new HashMap<Tuple, BlockingQueue<Callback>>();
 		moniteur = new ReentrantLock();
 	}
 
     /** Adds a tuple t to the tuplespace. */
     public void write(Tuple t){
+    	if(t == null){
+    		throw new NullPointerException();
+    	}
     	moniteur.lock();
-		tuples.add(t);
+		tuples.add(t.deepclone());
+		notifyNewTuple(t);
 		moniteur.unlock();
-		signalNewTuple(t);
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
@@ -48,10 +60,13 @@ public class CentralizedLinda implements Linda {
      * Blocks if no corresponding tuple is found. */
     public Tuple read(Tuple template){
 		Tuple res = null;
+		Condition c;
 		moniteur.lock();
-		res = tryRead(template);
-		while(res == null){
-			res = waitFor(template);
+		while((res = tryRead(template)) == null){
+			c = addWaitingRead(template);
+			try {
+				c.await();
+			}catch(InterruptedException e){}
 		}
 		moniteur.unlock();
 		return res;
@@ -76,7 +91,7 @@ public class CentralizedLinda implements Linda {
 		moniteur.lock();
 		for(Tuple t : tuples){
 			if(t.matches(template)){
-				res = t;
+				res = t.deepclone();
 			}
 		}
 		moniteur.unlock();
@@ -127,25 +142,18 @@ public class CentralizedLinda implements Linda {
      * @param callback the callback to call if a matching tuple appears.
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback){
-    	new Thread() {
-            public void run() {
-            	Tuple t = null;
-            	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
-            		t = read(template);
-            	}else if(mode == eventMode.READ && timing == eventTiming.FUTURE){
-            		t = waitFor(template);
-            	}else if(mode == eventMode.TAKE && timing == eventTiming.IMMEDIATE){
-            		t = take(template);
-            	}else if(mode == eventMode.TAKE && timing == eventTiming.FUTURE){
-            		moniteur.lock();
-            		t = waitFor(template);
-            		tuples.remove(t);
-            		moniteur.unlock();
-            	}
-                callback.call(t);
-            }
-        }.start();
-    	
+    	Tuple t = null;
+    	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
+    		t = read(template);
+    		runCallback(callback, t);
+    	}else if(mode == eventMode.READ && timing == eventTiming.FUTURE){
+    		addWaitingReadCallback(callback, template);
+    	}else if(mode == eventMode.TAKE && timing == eventTiming.IMMEDIATE){
+    		t = take(template);
+    		runCallback(callback, t);
+    	}else if(mode == eventMode.TAKE && timing == eventTiming.FUTURE){
+    		addWaitingTakeCallback(new TakeCallback(callback), template);
+    	}
 	}
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
@@ -155,60 +163,104 @@ public class CentralizedLinda implements Linda {
 		}
 	}
     
-    private void signalNewTuple(Tuple t){
-    	Condition res = null;
-    	moniteur.lock();
-		for(Tuple template : attente.keySet()){
-			if(t.matches(template)){
-				res = attente.get(template);
-			}
+    private Condition addWaitingRead(Tuple template){
+    	System.out.println("addWR");
+    	Condition c = moniteur.newCondition();
+    	if(waitingReads.get(template) == null){
+    		waitingReads.put(template, new ArrayBlockingQueue<Condition>(QUEUE_SIZE, true));
 		}
-		if(res != null){
-			res.signal();
-		}
-    	moniteur.unlock();
+    	waitingReads.get(template).add(c);
+    	return c;
     }
     
-    private Tuple waitFor(Tuple template){
-    	moniteur.lock();
-    	if(attente.get(template) == null){
-    		attente.put(template, moniteur.newCondition());
-    	}
-		try{
-			attente.get(template).await();
-		}catch(Exception e){}
-		//attente.remove(template);
-		signalNewTuple(template);
-    	moniteur.unlock();
-    	return null;
+    private Condition addWaitingTake(Tuple template){
+    	Condition c = moniteur.newCondition();
+    	if(waitingTakes.get(template) == null){
+    		waitingTakes.put(template, new ArrayBlockingQueue<Condition>(QUEUE_SIZE, true));
+		}
+    	waitingTakes.get(template).add(c);
+    	return c;
     }
-
-    private class WaitingList {
+    
+    private void addWaitingReadCallback(Callback callback, Tuple template){
+    	if(waitingReadCallbacks.get(template) == null){
+			waitingReadCallbacks.put(template, new ArrayBlockingQueue<Callback>(QUEUE_SIZE, true));
+		}
+		waitingReadCallbacks.get(template).add(callback);
+    }
+    
+    private void addWaitingTakeCallback(Callback callback, Tuple template){
+    	if(waitingTakeCallbacks.get(template) == null){
+    		waitingTakeCallbacks.put(template, new ArrayBlockingQueue<Callback>(QUEUE_SIZE, true));
+		}
+    	waitingTakeCallbacks.get(template).add(callback);
+    }
+    
+    private void notifyNewTuple(Tuple t){
+    	boolean notified = false;
+    	Condition c;
+    	Callback cb;
+    	/* Réveil des reads en attente */
+    	for(Tuple template : waitingReads.keySet()){
+			if(t.matches(template)){
+				while((c = waitingReads.get(template).poll()) != null){
+					c.signal();
+				}
+			}
+		}
+    	/* Réveil des readCallbacks en attente */
+    	for(Tuple template : waitingReadCallbacks.keySet()){
+			if(t.matches(template)){
+				while((cb = waitingReadCallbacks.get(template).poll()) != null){
+					runCallback(cb, t);
+				}
+			}
+		}
+    	/* Réveil d'un take en attente (priorité au takes direct) */
+    	while(!notified){
+    		notified = true;
+    	}
+    }
+    
+    private void runCallback(Callback c, Tuple t){
+    	new Thread(){
+            public void run(){
+		    	c.call(t);
+            }
+    	}.start();
+    }
+    
+    private class TakeCallback implements Callback {
     	
-    	private Map<Tuple, Condition> cond;
-    	private Map<Tuple, Integer> nbAttente;
+    	private Callback c;
     	
-    	public WaitingList(){
-    		cond = new HashMap<Tuple, Condition>();
-    		nbAttente = new HashMap<Tuple, Integer>();
+    	public TakeCallback(Callback c){
+    		this.c = c;
     	}
     	
-    	public void add(Tuple t){
-    		if(nbAttente.get(t) == null){
-    			cond.put(t, moniteur.newCondition());
-    			nbAttente.put(t, 1);
-    		}else{
-    			nbAttente.put(t, nbAttente.get(t) + 1);
-    		}
+		public void call(Tuple t) {
+			moniteur.lock();
+			tuples.remove(t);
+			moniteur.unlock();
+			c.call(t);
+		}
+    }
+    
+private class BlockingCallback implements Callback {
+    	
+    	private Condition co;
+    	
+    	public BlockingCallback(){
+    		co = new ReentrantLock().newCondition();
+    		moniteur.lock();
+			try {
+				co.await();
+			}catch(InterruptedException e){}
+			moniteur.unlock();
     	}
     	
-    	public void remove(Tuple t){
-    		if(nbAttente.get(t) > 1){
-    			nbAttente.put(t, nbAttente.get(t) - 1);
-    		}else{
-    			cond.remove(t);
-    			nbAttente.remove(t);
-    		}
-    	}
+		public void call(Tuple t) {
+			co.signal();
+		}
     }
 }

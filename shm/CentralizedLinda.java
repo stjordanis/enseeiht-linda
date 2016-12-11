@@ -142,18 +142,22 @@ public class CentralizedLinda implements Linda {
      * @param callback the callback to call if a matching tuple appears.
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback){
-    	Tuple t = null;
-    	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
-    		t = read(template);
-    		runCallback(callback, t);
-    	}else if(mode == eventMode.READ && timing == eventTiming.FUTURE){
-    		addWaitingReadCallback(callback, template);
-    	}else if(mode == eventMode.TAKE && timing == eventTiming.IMMEDIATE){
-    		t = take(template);
-    		runCallback(callback, t);
-    	}else if(mode == eventMode.TAKE && timing == eventTiming.FUTURE){
-    		addWaitingTakeCallback(new TakeCallback(callback), template);
-    	}
+    	new Thread(){
+    		public void run(){
+	    		Tuple t = null;
+		    	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
+		    		t = read(template);
+		    		runCallback(callback, t);
+		    	}else if(mode == eventMode.READ && timing == eventTiming.FUTURE){
+		    		addWaitingReadCallback(callback, template);
+		    	}else if(mode == eventMode.TAKE && timing == eventTiming.IMMEDIATE){
+		    		t = take(template);
+		    		callback.call(t);
+		    	}else if(mode == eventMode.TAKE && timing == eventTiming.FUTURE){
+		    		addWaitingTakeCallback(new TakeCallback(callback), template);
+		    	}
+    		}
+	    }.start();
 	}
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
@@ -164,7 +168,6 @@ public class CentralizedLinda implements Linda {
 	}
     
     private Condition addWaitingRead(Tuple template){
-    	System.out.println("addWR");
     	Condition c = moniteur.newCondition();
     	if(waitingReads.get(template) == null){
     		waitingReads.put(template, new ArrayBlockingQueue<Condition>(QUEUE_SIZE, true));

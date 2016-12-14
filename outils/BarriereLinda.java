@@ -1,4 +1,4 @@
-package linda.test;
+package linda.outils;
 
 import linda.Linda;
 import linda.Tuple;

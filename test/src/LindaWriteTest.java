@@ -8,73 +8,72 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.Ignore;
-import org.junit.After;
+import org.junit.Test;
+import org.junit.Before;
 
 import linda.*;
 
 public class LindaWriteTest {
-	private Linda linda;
-	private Tuple motif;
-	private Tuple tuple;
-	private Tuple tupleVide;
-	
+	private static Linda linda;
+	private static Tuple motif;
+	private static Tuple tuple;
+	private static Tuple tupleVide;
 	
 	@BeforeClass
-	public void setUpBeforeClass() throws Exception {
-		linda = new linda.shm.CentralizedLinda();	
-        // Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
-		
+	public static void setUpBeforeClass() throws Exception {
 		motif = new Tuple(Character.class, String.class, Integer.class);
 		tuple = new Tuple('a', "toto", 4);
 		tupleVide = new Tuple();
 	}
 
-	@After
-	public void cleanUp() {
-		linda.takeAll(motif);
-		linda.takeAll(tupleVide);
+	@Before
+	public void setUp() {
+		// linda = new linda.tshm.CentralizedLinda();
+		linda = new linda.shm.CentralizedLinda();	
+        // linda = new linda.server.LindaClient("//localhost:4000/aaa");
+	}
+	
+	@Test
+	public void testWriteTuple() {
+		linda.write(tuple);
+		assertEquals(linda.tryRead(tuple),tuple);
 	}
 	
 	@Test
 	public void testMultiEnsemble() {
 		linda.write(tuple);
 		linda.write(tuple);
-		assertTrue(linda.takeAll(motif).size() == 2);
+		assertEquals(linda.takeAll(tuple).size(),2);
 	}
 	
 	@Test
-	public void testWriteTuple() {
-		linda.write(tuple);
-		assertTrue(linda.read(tuple).equals(tuple));
-	}
-
-	@Test
 	public void testWriteMotif() {
 		linda.write(motif);
-		assertTrue(linda.read(motif).equals(motif));	}
+		assertEquals(linda.tryRead(motif), motif);
+	}
 	
 	@Test
 	public void testWriteVide() {
 		linda.write(tupleVide);
-		assertTrue(linda.read(tupleVide).equals(tupleVide));
+		assertEquals(linda.tryRead(tupleVide), tupleVide);
 	}
 	
-	@Test(expected=Exception.class)
+	
+	@Test(timeout=1000, expected=NullPointerException.class)
 	public void testWriteNullThrowsException() {
 		linda.write(null);
 	}
-	
-	@Ignore
+
 	@Test
-	public void testWriteNull() {
+	public void testWriteNullStoresNothing() {
 		try {
 			linda.write(null);
 		} catch (Exception e) {
 			;
 		}
-		// Verifier que rien n'a été enregistré sur le serveur
+		
+		// Check that nothing is stored on the server
 	    PrintStream origOut = System.out;
 	    
 	    // Start capturing

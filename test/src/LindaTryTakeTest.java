@@ -3,68 +3,67 @@ package linda.test;
 import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.After;
+import org.junit.Before;
 
 import linda.*;
 
 public class LindaTryTakeTest {
-	private Linda linda;
-	private Tuple motif;
-	private Tuple tuple;
-	private Tuple tupleVide;
-	
+	private static Linda linda;
+	private static Tuple motif;
+	private static Tuple tuple;
+	private static Tuple tupleVide;
 	
 	@BeforeClass
-	public void setUpBeforeClass() throws Exception {
-		linda = new linda.shm.CentralizedLinda();	
-        // Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
-		
+	public static void setUpBeforeClass() throws Exception {
 		motif = new Tuple(Character.class, String.class, Integer.class);
 		tuple = new Tuple('a', "toto", 4);
 		tupleVide = new Tuple();
 	}
 
-	@After
-	public void cleanUp() {
-		linda.takeAll(motif);
-		linda.takeAll(tupleVide);
+	@Before
+	public void setUp() {
+		// linda = new linda.tshm.CentralizedLinda();
+		linda = new linda.shm.CentralizedLinda();	
+        // linda = new linda.server.LindaClient("//localhost:4000/aaa");
 	}
 	
 	@Test
 	public void testTryTakeTuple() {
 		linda.write(tuple);
-		assertTrue(linda.tryTake(tuple).equals(tuple));
+		assertEquals(linda.tryTake(tuple),tuple);
 	}
 
 	@Test
 	public void testTryTakeMotif1() {
 		linda.write(tuple);
-		assertTrue(linda.tryTake(motif).equals(tuple));
+		assertEquals(linda.tryTake(motif), tuple);
 	}
 	
 	@Test
 	public void testTryTakeMotif2() {
 		linda.write(motif);
-		assertTrue(linda.tryTake(motif).equals(motif));
+		assertEquals(linda.tryTake(motif), motif);
 	}
 	
 	@Test
 	public void testTryTakeVide() {
 		linda.write(tupleVide);
-		assertTrue(linda.tryTake(tupleVide).equals(tupleVide));
+		assertEquals(linda.tryTake(tupleVide), tupleVide);
 	}
 	
 	@Test
 	public void testTryTakeRemove() {
 		linda.write(tuple);
 		linda.tryTake(tuple);
-		assertNull(linda.tryRead(tuple));
+		assertNull(linda.tryTake(tuple));
 	}
 	
 	@Test
-	public void testTryTakeReturnNull() {
-		assertNull(linda.tryTake(motif));
+	public void testTryTakeReturnsNull() {
+		linda.write(motif);
+		assertNull(linda.tryTake(tupleVide));
 	}
 	
 	@Test
@@ -80,14 +79,29 @@ public class LindaTryTakeTest {
     	            }
     	        };
             th.start();
-            Thread.sleep(2);
-            assertTrue(th.getState() == Thread.State.TERMINATED);
+            Thread.sleep(200);
+            assertEquals(th.getState(),Thread.State.TERMINATED);
 	}
 	
-	// TODO : verifier que l'exception renvoyée est bien censé être NullPointerException
-	@Test(expected=NullPointerException.class)
+	@Test(timeout=1000, expected=NullPointerException.class)
 	public void testTryTakeNullThrowsException() {
 		linda.tryTake(null);
 	}
-
+	
+	@Test
+	public void testTryTakeNullDontBlock() throws InterruptedException {
+        Thread th = 
+	        new Thread() {
+	            public void run() {
+	                try {
+	                    linda.tryTake(null);
+	                } catch (Exception e) {
+	                    ;
+	                }
+	            }
+	        };
+        th.start();
+        Thread.sleep(100);
+        assertEquals(th.getState(), Thread.State.TERMINATED);
+	}
 }

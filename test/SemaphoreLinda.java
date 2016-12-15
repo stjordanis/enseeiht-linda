@@ -1,4 +1,4 @@
-package linda.test;
+package test;
 
 import linda.*;
 
@@ -8,7 +8,7 @@ public class SemaphoreLinda {
 	private Tuple t;
 	
 	public SemaphoreLinda(Integer nbJetons) {
-		linda = new linda.shm.CentralizedLinda();	
+		linda = new shm.CentralizedLinda();	
 		
 		t = new Tuple();
 		

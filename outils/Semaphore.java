@@ -2,12 +2,12 @@ package outils;
 
 import linda.*;
 
-public class SemaphoreLinda {
+public class Semaphore {
 
 	private Linda linda;
 	private Tuple t;
 	
-	public SemaphoreLinda(Integer nbJetons) {
+	public Semaphore(Integer nbJetons) {
 		linda = new shm.CentralizedLinda();	
 		
 		t = new Tuple();
@@ -17,7 +17,7 @@ public class SemaphoreLinda {
 		}
 	}
 
-	public SemaphoreLinda() {
+	public Semaphore() {
 		this(0);		
 	}
 	

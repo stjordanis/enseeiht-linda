@@ -1,5 +1,4 @@
-
-package linda.test;
+package test;
 
 import linda.*;
 import linda.Linda.eventMode;
@@ -19,7 +18,7 @@ public class BasicTestCallback {
 
     public static void main(String[] a) {
 
-        Linda linda = new linda.shm.CentralizedLinda();
+        Linda linda = new shm.CentralizedLinda();
         //Linda linda = new linda.server.LindaClient("//localhost:4000/MonServeur");
 
         Tuple motif = new Tuple(Integer.class, String.class);

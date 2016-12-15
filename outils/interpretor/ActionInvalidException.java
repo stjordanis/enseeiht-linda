@@ -1,4 +1,4 @@
-package interpretor;
+package outils.interpretor;
 
 public class ActionInvalidException extends Exception {
 	

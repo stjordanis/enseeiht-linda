@@ -1,4 +1,4 @@
-package interpretor;
+package outils.interpretor;
 
 import java.io.InputStream;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package linda.test;
+package test;
 
 import linda.Linda;
 

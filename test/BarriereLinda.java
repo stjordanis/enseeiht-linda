@@ -1,4 +1,4 @@
-package linda.test;
+package test;
 
 import linda.Linda;
 import linda.Tuple;
@@ -11,7 +11,7 @@ public class BarriereLinda {
 	private int nbWaiting;
 	
 	public BarriereLinda(int nbProcess) {
-		linda = new linda.shm.CentralizedLinda();	
+		linda = new shm.CentralizedLinda();	
 		
 		t = new Tuple();
 		

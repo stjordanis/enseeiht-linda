@@ -1,4 +1,4 @@
-package linda.shm;
+package shm;
 
 import java.util.ArrayList;
 import java.util.Collection;

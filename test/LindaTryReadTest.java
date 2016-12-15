@@ -1,4 +1,4 @@
-package linda.test;
+package test;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +25,7 @@ public class LindaTryReadTest {
 	@Before
 	public void setUp() {
 		// linda = new linda.tshm.CentralizedLinda();
-		linda = new linda.shm.CentralizedLinda();	
+		linda = new shm.CentralizedLinda();	
         // linda = new linda.server.LindaClient("//localhost:4000/aaa");
 	}
 	

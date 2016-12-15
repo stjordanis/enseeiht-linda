@@ -1,7 +1,12 @@
+package applications.philo;
+
+import java.lang.reflect.Constructor;
+
 // Time-stamp: <02 mai 2013 10:25 queinnec@enseeiht.fr>
 // V0.1 10/15 (PM, correction gauche<->droite)
 
-import Synchro.Simulateur;
+import applications.philo.StrategiePhilo;
+import applications.philo.Synchro.Simulateur;
 
 public class Main {
 
@@ -86,8 +91,7 @@ public class Main {
         nbPhilosophes = nbPhilo;
         setSleepDuration (2);
         simu = new Simulateur (nbPhilosophes);
-        
-        strategie = charger_implantation("StrategiePhilo", nomImplantation, nbPhilosophes);
+        strategie = charger_implantation("applications.philo.StrategiePhilo", nomImplantation, nbPhilosophes);
         
         new IHMPhilo (strategie.nom(), nbPhilosophes, simu);
 
@@ -96,7 +100,6 @@ public class Main {
             Thread t = new Thread(philo);
             t.start();
         }
-
     }
 
     /** Crée un objet à partir de l'implantation implName, qui doit implanter
@@ -136,8 +139,8 @@ public class Main {
 
         // Crée une instance
         try {
-            Class[] consparam = { int.class };
-            java.lang.reflect.Constructor cons = implant.getConstructor(consparam);
+            Class<?>[] consparam = { int.class };
+            Constructor<?> cons = implant.getConstructor(consparam);
             Object[] initargs = { new Integer(nbPhilo) };
             res = (StrategiePhilo) cons.newInstance (initargs);
         } catch (NoSuchMethodException e) {
@@ -160,6 +163,8 @@ public class Main {
 
     public static void main (String args[])
     {
+
+        System.out.println("Strategie philo name : " + StrategiePhilo.class.getName());
         if ((args.length != 0) && (args.length != 2)) {
             System.out.println("java Main <implantation> <nb_philo>");
             System.exit (1);

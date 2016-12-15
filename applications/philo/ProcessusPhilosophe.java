@@ -1,7 +1,9 @@
+package applications.philo;
+
 // Time-stamp: v0.0 <28 Oct 2008 17:06 queinnec@enseeiht.fr>
 // V0.1 6/9/13 (PM, correction de commentaires)
 
-import Synchro.Simulateur;
+import applications.philo.Synchro.Simulateur;
 
 /** Code d'un philosophe. */
 public class ProcessusPhilosophe implements Runnable

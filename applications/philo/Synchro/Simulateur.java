@@ -1,6 +1,6 @@
 // Time-stamp: <02 Apr 2008 16:09 queinnec@enseeiht.fr>
 
-package Synchro;
+package applications.philo.Synchro;
 
 import java.util.Random;
 import java.util.Set;

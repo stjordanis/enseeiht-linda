@@ -1,14 +1,14 @@
+package applications.philo;
+
 // Time-stamp: <08 déc 2009 08:30 queinnec@enseeiht.fr>
 
-import java.util.concurrent.Semaphore;
-import linda.test
-import test.SemaphoreLinda;.*
+import outils.Semaphore;
 
 public class PhiloVoisins implements StrategiePhilo {
 
     /****************************************************************/
 
-    SemaphoreLinda[] philosophes;
+    Semaphore[] philosophes;
     EtatPhilosophe[] etats;
 
     public PhiloVoisins (int nbPhilosophes) {
@@ -28,13 +28,13 @@ public class PhiloVoisins implements StrategiePhilo {
             int fourchetteGauche = Main.FourchetteGauche(no);
             int fourchetteDroite = Main.FourchetteDroite(no);
             if (peutManger(no)) {
-                philosophes[no].release();
+                philosophes[no].V();
                 etats[no] = EtatPhilosophe.Mange;
                 IHMPhilo.poser(fourchetteGauche, EtatFourchette.AssietteDroite);
                 IHMPhilo.poser(fourchetteDroite, EtatFourchette.AssietteGauche);
             } else {
                 etats[no] = EtatPhilosophe.Demande;
-                philosophes[no].acquire();
+                philosophes[no].P();
             }
         }
     }
@@ -55,14 +55,14 @@ public class PhiloVoisins implements StrategiePhilo {
             if (etats[philoGauche] == EtatPhilosophe.Demande
                     && peutManger(philoGauche)) {
                 etats[philoGauche] = EtatPhilosophe.Mange;
-                philosophes[philoGauche].release();
+                philosophes[philoGauche].V();
                 IHMPhilo.poser(Main.FourchetteGauche(philoGauche), EtatFourchette.AssietteDroite);
                 IHMPhilo.poser(fourchetteGauche, EtatFourchette.AssietteGauche);
             }
             if (etats[philoDroite] == EtatPhilosophe.Demande
                     && peutManger(philoDroite)) {
                 etats[philoDroite] = EtatPhilosophe.Mange;
-                philosophes[philoDroite].release();
+                philosophes[philoDroite].V();
                 IHMPhilo.poser(fourchetteDroite, EtatFourchette.AssietteDroite);
                 IHMPhilo.poser(Main.FourchetteDroite(philoDroite), EtatFourchette.AssietteGauche);
             }

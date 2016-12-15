@@ -1,3 +1,5 @@
+package applications.philo;
+
 // Time-stamp: <28 Oct 2008 17:09 queinnec@enseeiht.fr>
 
 /** Interface commune aux implantations de la gestion des fourchettes. */

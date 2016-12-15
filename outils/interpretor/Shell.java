@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import linda.Linda;
+import linda.*;
 
 public class Shell {
 

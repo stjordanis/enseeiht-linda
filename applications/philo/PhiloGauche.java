@@ -1,14 +1,14 @@
+package applications.philo;
+
 // Time-stamp: <08 déc 2009 08:30 queinnec@enseeiht.fr>
 
-import java.util.concurrent.Semaphore;
-import linda.test
-import test.SemaphoreLinda;.*
+import outils.Semaphore;
 
 public class PhiloGauche implements StrategiePhilo {
 
     /****************************************************************/
 
-    SemaphoreLinda[] fourchettes;
+    Semaphore[] fourchettes;
 
     public PhiloGauche (int nbPhilosophes) {
         fourchettes = new Semaphore[nbPhilosophes];
@@ -24,15 +24,15 @@ public class PhiloGauche implements StrategiePhilo {
         int fourchetteDroite = Main.FourchetteDroite(no);
 
         if (no == 0) {
-            fourchettes[fourchetteGauche].acquire();
+            fourchettes[fourchetteGauche].P();
             IHMPhilo.poser(fourchetteGauche, EtatFourchette.AssietteDroite);
         }
 
-        fourchettes[fourchetteDroite].acquire();
+        fourchettes[fourchetteDroite].P();
         IHMPhilo.poser(fourchetteDroite, EtatFourchette.AssietteGauche);
 
         if (no != 0) {
-            fourchettes[fourchetteGauche].acquire();
+            fourchettes[fourchetteGauche].P();
             IHMPhilo.poser(fourchetteGauche, EtatFourchette.AssietteDroite);
         }
     }
@@ -43,9 +43,9 @@ public class PhiloGauche implements StrategiePhilo {
     public void libererFourchettes (int no) {
         int fourchetteGauche = Main.FourchetteGauche(no);
         int fourchetteDroite = Main.FourchetteDroite(no);
-        fourchettes[fourchetteGauche].release();
+        fourchettes[fourchetteGauche].V();
         IHMPhilo.poser(fourchetteGauche, EtatFourchette.Table);
-        fourchettes[fourchetteDroite].release();
+        fourchettes[fourchetteDroite].V();
         IHMPhilo.poser(fourchetteDroite, EtatFourchette.Table);
     }
 

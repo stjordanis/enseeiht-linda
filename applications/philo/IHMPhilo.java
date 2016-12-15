@@ -1,3 +1,5 @@
+package applications.philo;
+
 // Time-stamp: <10 jui 2013 16:51 queinnec@enseeiht.fr>
 // V0.1 9/13 (PM, commentaires)
 // V0.2 10/14 (PM, aide)
@@ -8,7 +10,7 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Hashtable;
-import Synchro.Simulateur;
+import applications.philo.Synchro.Simulateur;
 
 /** La partie graphique des philosophes.
  * Les seules méthodes visibles sont IHMPhilo.changerEtat et IHMPhilo.poser.

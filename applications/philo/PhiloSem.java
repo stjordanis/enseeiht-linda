@@ -1,6 +1,8 @@
+package applications.philo;
+
 // Time-stamp: <08 déc 2009 08:30 queinnec@enseeiht.fr>
 
-import java.util.concurrent.Semaphore;
+import outils.Semaphore;
 
 public class PhiloSem implements StrategiePhilo {
 

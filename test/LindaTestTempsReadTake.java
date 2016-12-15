@@ -2,26 +2,27 @@ package test;
 
 import java.util.Date;
 
-import linda.*;
+import linda.Linda;
+import linda.Tuple;
 
-/** Cette classe cherche a déterminer le temps d'accès a un tuple particulier lorsque 
- * le serveur contient de très nombreux éléments stockés
+/** Ce test a pour but de déterminer si les appels a take et a read sont 
+ * exécutés dans des durées similaires ou non lorsque le serveur est chargé.
  */
-
-public class LindaTestPerfMemoire {
-
+public class LindaTestTempsReadTake {
 	public static void main(String[] args) {
-		int nTuplesMax = 1000000;
-		int nTuplesPas = 50000;
-		long[] resu = new long[nTuplesMax/nTuplesPas+1];
+		int nTuplesMax = 1000;
+		int nTuplesPas = 100;
+		long[] resu = new long[2];
 		
+		System.out.println("Nb Tuples       Tps Read (ms)       Tps Take (ms)");
+
 		for (int nTuples=nTuplesPas; nTuples<= nTuplesMax; nTuples+= nTuplesPas) {
-			resu[nTuples/nTuplesPas] = test(nTuples);
-			System.out.println("Temps pour "+ nTuples + " tuples : " + resu[nTuples/nTuplesPas]+" ms");
+			resu = test(nTuples);
+			System.out.println(String.format("%9d%20d%20d", nTuples, resu[0], resu[1]));
 		}
 	}
 	
-    public static long test(int nTuple) {    	
+    public static long[] test(int nTuple) {    	
     	// Création de quelques tuples
     	Tuple t1 = new Tuple(5, 'a', "test", "extremité", 1);
     	Tuple t2 = new Tuple(7, 'b', "test", "extremité", 2);
@@ -48,11 +49,20 @@ public class LindaTestPerfMemoire {
         }
         
         // On fait le test
+		long[] resu = new long [2];
+        
 		long startTime = new Date().getTime();
 		linda.read(t6);
 		long endTime = new Date().getTime();
+		resu[0] = endTime-startTime;
 		
-		return (endTime-startTime);
+		startTime = new Date().getTime();
+		linda.take(t6);
+		endTime = new Date().getTime();
+		resu[1] = endTime-startTime;
+		
+		
+		return resu;
     }
     
     

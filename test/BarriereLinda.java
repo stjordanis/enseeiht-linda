@@ -1,7 +1,6 @@
 package test;
 
-import linda.Linda;
-import linda.Tuple;
+import linda.*;
 
 public class BarriereLinda {
 

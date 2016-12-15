@@ -13,7 +13,7 @@ public class LindaEventRegisterTest {
 	@BeforeClass
 	public void setUpBeforeClass() throws Exception {
 		final Linda linda = new shm.CentralizedLinda();	
-        // final Linda linda = new linda.server.LindaClient("//localhost:4000/aaa");
+        // final Linda linda = new server.LindaClient("//localhost:4000/aaa");
 	}
 	
 	@Before

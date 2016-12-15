@@ -26,9 +26,9 @@ public class LindaReadAllTest {
 
 	@Before
 	public void setUp() {
-		//linda = new linda.tshm.CentralizedLinda();
+		//linda = new tshm.CentralizedLinda();
 		linda = new shm.CentralizedLinda();	
-        // linda = new linda.server.LindaClient("//localhost:4000/aaa");
+        // linda = new server.LindaClient("//localhost:4000/aaa");
 	}
 
 

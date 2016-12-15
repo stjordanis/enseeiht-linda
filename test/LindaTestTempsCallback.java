@@ -2,22 +2,25 @@ package test;
 
 import java.util.Date;
 
-import linda.*;
+import linda.Linda;
+import linda.Tuple;
 
-/** Cette classe cherche a déterminer le temps d'accès a un tuple particulier lorsque 
- * le serveur contient de très nombreux éléments stockés
+/** Cette classe cherche à determiner le temps que met le serveur pour réveiller un process
+ * lorsqu'un élément attendu est écrit sur le serveur et que de nombreux callbacks sont en attente.
+ *
  */
-
-public class LindaTestPerfMemoire {
+public class LindaTestTempsCallback {
 
 	public static void main(String[] args) {
-		int nTuplesMax = 1000000;
-		int nTuplesPas = 50000;
-		long[] resu = new long[nTuplesMax/nTuplesPas+1];
+		int nCallbacksMax = 10000;
+		int nCallBackssPas = 500;
+		long resu;
 		
-		for (int nTuples=nTuplesPas; nTuples<= nTuplesMax; nTuples+= nTuplesPas) {
-			resu[nTuples/nTuplesPas] = test(nTuples);
-			System.out.println("Temps pour "+ nTuples + " tuples : " + resu[nTuples/nTuplesPas]+" ms");
+		System.out.println("Nb Callbacks       Tps(ms)");
+		
+		for (int nCallbacks=nCallBackssPas; nCallbacks<= nCallbacksMax; nCallbacks+= nCallBackssPas) {
+			resu = test(nCallbacks);
+			System.out.println(String.format("%12d%14d", nCallbacks, resu));
 		}
 	}
 	
@@ -37,23 +40,23 @@ public class LindaTestPerfMemoire {
         final Linda linda = new shm.CentralizedLinda();
         // final Linda linda = new server.LindaClient("//localhost:4000/aaa");
         
-        // On écrit des données sur ce serveur
-        linda.write(t6);
+        // On demande des données au serveur
+        // TODO : faire faire les take par d'autres process
+        // Sinon le main est bloqué
+        linda.take(t6);
         for (int i=0; i<nTuple; i+=5) {
-        	linda.write(t1);
-        	linda.write(t2);
-        	linda.write(t3);
-        	linda.write(t4);
-        	linda.write(t5);
+        	linda.take(t1);
+        	linda.take(t2);
+        	linda.take(t3);
+        	linda.take(t4);
+        	linda.take(t5);
         }
         
         // On fait le test
 		long startTime = new Date().getTime();
-		linda.read(t6);
+		linda.write(t6);
 		long endTime = new Date().getTime();
 		
 		return (endTime-startTime);
     }
-    
-    
 }

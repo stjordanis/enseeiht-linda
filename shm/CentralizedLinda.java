@@ -245,6 +245,7 @@ public class CentralizedLinda implements Linda {
     		templateTake = it.next();
     		if(t.matches(templateTake)){
     			waitingTakes.get(templateTake).poll().signal();
+				notified = true;
 			}
     	}
     	it = waitingTakeCallbacks.keySet().iterator();
@@ -252,6 +253,7 @@ public class CentralizedLinda implements Linda {
     		templateTake = it.next();
     		if(t.matches(templateTake)){
     			runCallback(waitingTakeCallbacks.get(templateTake).poll(), t);
+				notified = true;
 			}
     	}
     }

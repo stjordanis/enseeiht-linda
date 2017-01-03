@@ -19,7 +19,7 @@ public class LindaTestCapaciteMemoire {
         
         while (nTuple < NMAX) {
         	try {
-            	t = new Tuple(nTuple, nTuple+15, nTuple + "chaine de caractère très longue pour prendre le plus vite possible de la place sur le serveur");
+            	t = new Tuple(nTuple, nTuple+15, nTuple + "longue chaine de caractère pour prendre le plus vite possible de la place sur le serveur");
             	
             	for (int i=0; i<pas; i++) {
             		linda.write(t);

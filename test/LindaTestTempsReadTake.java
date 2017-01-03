@@ -10,8 +10,8 @@ import linda.Tuple;
  */
 public class LindaTestTempsReadTake {
 	public static void main(String[] args) {
-		int nTuplesMax = 1000;
-		int nTuplesPas = 100;
+		int nTuplesMax = 500000;
+		int nTuplesPas = 50000;
 		long[] resu = new long[2];
 		
 		System.out.println("Nb Tuples       Tps Read (ms)       Tps Take (ms)");
@@ -39,7 +39,7 @@ public class LindaTestTempsReadTake {
         // final Linda linda = new server.LindaClient("//localhost:4000/aaa");
         
         // On écrit des données sur ce serveur
-        linda.write(t6);
+
         for (int i=0; i<nTuple; i+=5) {
         	linda.write(t1);
         	linda.write(t2);
@@ -47,6 +47,7 @@ public class LindaTestTempsReadTake {
         	linda.write(t4);
         	linda.write(t5);
         }
+        linda.write(t6);
         
         // On fait le test
 		long[] resu = new long [2];

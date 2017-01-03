@@ -11,9 +11,9 @@ import linda.*;
 public class LindaTestPerfProcess {
 
 	public static void main(String[] args) {
-		int nTuplesMax = 10000;
+		int nTuplesMax = 50000;
 		int nProcessMax = 1000;
-		int nTuplesPas = 1000;
+		int nTuplesPas = 5000;
 		int nProcessPas = 100;
 		long resu;
 		

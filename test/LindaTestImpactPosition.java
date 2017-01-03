@@ -11,8 +11,8 @@ import linda.Tuple;
 
 public class LindaTestImpactPosition {
 	public static void main(String[] args) {
-		int nTuplesMax = 1000;
-		int nTuplesPas = 100;
+		int nTuplesMax = 500000;
+		int nTuplesPas = 50000;
 		long[] resu = new long[3];
 		
 		System.out.println("Nb Tuples        Tps 1er (ms)    Tps dernier (ms)     Tps milieu (ms)");

@@ -3,6 +3,7 @@ package shm;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -49,9 +50,15 @@ public class CentralizedLinda implements Linda {
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Blocks if no corresponding tuple is found. */
     public Tuple take(Tuple template){
+    	Tuple res = null;
+		Condition c;
 		moniteur.lock();
-		Tuple res = read(template);
-		tuples.remove(res);
+		while((res = tryTake(template)) == null){
+			c = addWaitingTake(template);
+			try {
+				c.await();
+			}catch(InterruptedException e){}
+		}
 		moniteur.unlock();
 		return res;
 	}
@@ -87,6 +94,9 @@ public class CentralizedLinda implements Linda {
     /** Returns a tuple matching the template and leaves it in the tuplespace.
      * Returns null if none found. */
     public Tuple tryRead(Tuple template){
+    	if(template == null){
+    		throw new NullPointerException();
+    	}
 		Tuple res = null;
 		moniteur.lock();
 		for(Tuple t : tuples){
@@ -119,12 +129,17 @@ public class CentralizedLinda implements Linda {
      * for instance (write([1]);write([2])) || readAll([?Integer]) may return only [2].
      */
     public Collection<Tuple> readAll(Tuple template){
-		Collection<Tuple> res = new ArrayList<Tuple>();
-		Tuple t = tryRead(template);
-		while(t != null){
-			res.add(t);
-			t = tryRead(template);
+    	if(template == null){
+    		throw new NullPointerException();
+    	}
+		Collection<Tuple> res = new ArrayList<Tuple>();		
+		moniteur.lock();
+		for(Tuple t : tuples){
+			if(t.matches(template)){
+				res.add(t);
+			}
 		}
+		moniteur.unlock();
 		return res;
 	}
 
@@ -142,6 +157,9 @@ public class CentralizedLinda implements Linda {
      * @param callback the callback to call if a matching tuple appears.
      */
     public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback){
+    	if(template == null){
+    		throw new NullPointerException();
+    	}
     	new Thread(){
     		public void run(){
 	    		Tuple t = null;
@@ -203,6 +221,8 @@ public class CentralizedLinda implements Linda {
     	boolean notified = false;
     	Condition c;
     	Callback cb;
+    	Iterator<Tuple> it;
+    	Tuple templateTake;
     	/* Réveil des reads en attente */
     	for(Tuple template : waitingReads.keySet()){
 			if(t.matches(template)){
@@ -220,8 +240,21 @@ public class CentralizedLinda implements Linda {
 			}
 		}
     	/* Réveil d'un take en attente (priorité au takes direct) */
-    	while(!notified){
-    		notified = true;
+    	it = waitingTakes.keySet().iterator();
+    	while(!notified && it.hasNext()){
+    		templateTake = it.next();
+    		if(t.matches(templateTake)){
+    			waitingTakes.get(templateTake).poll().signal();
+				notified = true;
+			}
+    	}
+    	it = waitingTakeCallbacks.keySet().iterator();
+    	while(!notified && it.hasNext()){
+    		templateTake = it.next();
+    		if(t.matches(templateTake)){
+    			runCallback(waitingTakeCallbacks.get(templateTake).poll(), t);
+				notified = true;
+			}
     	}
     }
     
@@ -248,22 +281,5 @@ public class CentralizedLinda implements Linda {
 			c.call(t);
 		}
     }
-    
-private class BlockingCallback implements Callback {
-    	
-    	private Condition co;
-    	
-    	public BlockingCallback(){
-    		co = new ReentrantLock().newCondition();
-    		moniteur.lock();
-			try {
-				co.await();
-			}catch(InterruptedException e){}
-			moniteur.unlock();
-    	}
-    	
-		public void call(Tuple t) {
-			co.signal();
-		}
-    }
+  
 }

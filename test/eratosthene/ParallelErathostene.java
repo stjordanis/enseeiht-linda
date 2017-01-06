@@ -40,7 +40,7 @@ public class ParallelErathostene extends AbstractEratosthene {
         }
 
         public void run () {
-            for (int curInt = from; curInt*curInt <= to; curInt++) {
+            for (int curInt = from; curInt <= to; curInt++) {
                 Tuple primeTuple = linda.tryRead(new Tuple(curInt));
                 if (primeTuple != null) {
                     int prime = (Integer) primeTuple.element();

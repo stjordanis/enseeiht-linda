@@ -119,6 +119,7 @@ public class Process extends Thread implements Callback {
         			Tuple.valueOf(action[1].trim());
         		} catch (linda.TupleFormatException e) {
         			System.out.println("Tuple \"" + action[1].trim() + "\" is not valid");
+        			action = null;
         		}
         		break;
         	case "eventRegister":
@@ -141,6 +142,10 @@ public class Process extends Thread implements Callback {
     	}
     }
 
+    public boolean isWaiting() {
+    	return waiting;
+    }
+    
 	@Override
 	public void call(Tuple tuple) {
 		System.out.println("<callback> " + name + ": " + tuple);

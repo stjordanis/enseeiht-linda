@@ -11,7 +11,7 @@ public class Shell {
 
 	InputStream in;
 	Map<String, Process> processes = new HashMap<>();
-	final private Linda linda = new linda.tshm.CentralizedLinda();
+	final private Linda linda = new shm.CentralizedLinda();
 	
 	public Shell(InputStream in) {
 		this.in = in;
@@ -54,6 +54,28 @@ public class Shell {
 			break;
 		case "debug":
 			linda.debug("<user>");
+			break;
+		case "help":
+			System.out.println("These are common Linda commands used in various situations:\n"
+					+ "create <name>:	create a process with given name\n"
+					+ "list: print all processes\n"
+					+ "debug: print the tuple space\n"
+					+ "exit:	close the current shell and all associated process\n"
+					+ "<process_name> <action>: execute an action on process\n"
+					+ "\t write <tuple>:	write the given tuple\n"
+					+ "\t take <tuple>:		take a matching tuple\n"
+					+ "\t read <tuple>:		read a matching tuple\n"
+					+ "\t tryTake <tuple>:	try to take a matching tuple\n"
+					+ "\t tryRead <tuple>:	try to read a matching tuple\n"
+					+ "\t takeAll <tuple>:	take all matching tuples\n"
+					+ "\t eventRegister <read|take> <immediate|future> <tuple>: register event as described\n"
+					+ "\t terminate: 		terminate the process\n"
+					+ "You can parallelized request with the || operator.");
+			break;
+		case "list":
+			for (String process : processes.keySet()) {
+				System.out.println(process + " is " + (processes.get(process).isWaiting() ? "waiting" : "available"));
+			}
 			break;
 		case "exit":
 			for (Thread t : processes.values()) {

@@ -1,3 +1,4 @@
+package applications.allocateur;
 
 // Time-stamp: <21 Mar 2008 14:19 queinnec@enseeiht.fr>
 public interface Allocateur {

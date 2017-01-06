@@ -7,6 +7,7 @@ import java.lang.reflect.Constructor;
 
 import applications.philo.StrategiePhilo;
 import applications.philo.Synchro.Simulateur;
+import applications.philo.StrategiePhilo;
 
 public class Main {
 
@@ -93,7 +94,7 @@ public class Main {
         simu = new Simulateur (nbPhilosophes);
         strategie = charger_implantation("applications.philo.StrategiePhilo", nomImplantation, nbPhilosophes);
         
-        new IHMPhilo (strategie.nom(), nbPhilosophes, simu);
+        new IHMPhilo(strategie.nom(), nbPhilosophes, simu);
 
         for (int i = 0; i < nbPhilosophes; i++) {
             Runnable philo = new ProcessusPhilosophe (i, strategie, simu);
@@ -112,7 +113,7 @@ public class Main {
         // Obtenir l'interface interfName
         Class<?> interf;
         try {
-            interf = Class.forName (interfName);
+            interf = Class.forName (StrategiePhilo.class.getName());
         } catch (ClassNotFoundException e) {
             System.err.println ("Panic: ne trouve pas l'interface "+interfName+" :"+e);
             return null;

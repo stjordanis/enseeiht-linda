@@ -1,6 +1,6 @@
 // Time-stamp: <02 mai 2013 10:16 queinnec@enseeiht.fr>
 
-package Synchro;
+package applications.lectred.Synchro;
 
 /** Identification de processus.
  * Opérations: ProcId.getId(), equals(ProcId) et equals(int).
@@ -17,7 +17,7 @@ public class ProcId {
     
     private int id;
 
-    private ProcId (int id) {
+    public ProcId (int id) {
         this.id = id;
     }
 

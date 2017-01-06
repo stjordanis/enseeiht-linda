@@ -1,3 +1,4 @@
+package applications.lectred;
 // Time-stamp: <02 mai 2013 11:59 queinnec@enseeiht.fr>
 
 import javax.swing.*;

@@ -1,7 +1,8 @@
+package applications.lectred;
 // Time-stamp: <02 mai 2013 10:22 queinnec@enseeiht.fr>
 // v1 (10/14, PM) : Nettoyage applet
 
-import Synchro.Simulateur;
+import applications.lectred.Synchro.Simulateur;
 
 public class Main
 {

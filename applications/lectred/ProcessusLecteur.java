@@ -1,11 +1,12 @@
+package applications.lectred;
 // Time-stamp: <02 Apr 2008 16:27 queinnec@enseeiht.fr>
 // v1 (10/14, PM) : Ajout d'une petite temporisation sur les transitions critiques (accès)
 //  pour éviter un décalage entre l'état de l'application et l'état des objets grqphiques
 //	au moment du test de cohérence réalisé par l'IHM graphique. Pas très glorieux, mais
 //  a priori inévitable, à partir du moment où l'affichage et la simulation sont découplés
 
-import Synchro.Simulateur;
-import Synchro.ProcId;
+import applications.lectred.Synchro.Simulateur;
+import applications.lectred.Synchro.ProcId;
 
 public class ProcessusLecteur extends Thread
 {
@@ -45,7 +46,7 @@ public class ProcessusLecteur extends Thread
                 // pense
                 simu.sleep (Main.MinDelayLRien, Main.MaxDelayLRien);
             }
-        } catch (Synchro.Suicide e) {
+        } catch (applications.lectred.Synchro.Suicide e) {
             // nothing
         } catch (InterruptedException e2) {
             // nothing

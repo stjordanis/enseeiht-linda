@@ -1,6 +1,6 @@
 // Time-stamp: <02 mai 2013 10:16 queinnec@enseeiht.fr>
 
-package Synchro;
+package applications.allocateur.Synchro;
 
 /** À défaut d'un vrai assert...
  * @see AssertionViolation

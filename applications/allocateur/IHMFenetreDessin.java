@@ -1,3 +1,4 @@
+package applications.allocateur;
 // Time-stamp: <12 Aug 2002 14:51 queinnec@enseeiht.fr>
 
 /** Fenêtre de dessin */
@@ -5,7 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import Synchro.Simulateur;
+import applications.allocateur.Synchro.Simulateur;
 
 class IHMFenetreDessin extends JPanel
 {

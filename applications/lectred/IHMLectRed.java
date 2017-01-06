@@ -1,3 +1,4 @@
+package applications.lectred;
 // Time-stamp: <30 mai 2013 10:32 queinnec@enseeiht.fr>
 // v1 (10/14, PM) : Nettoyage applet, 
 //					Correction message d'avertissement émis par le test de cohérence.
@@ -9,8 +10,8 @@ import javax.swing.event.*;
 import java.util.*;
 import java.util.List;
 import java.util.Hashtable;	
-import Synchro.Simulateur;
-import Synchro.ProcId;
+import applications.lectred.Synchro.Simulateur;
+import applications.lectred.Synchro.ProcId;
 
 public class IHMLectRed
 {
@@ -28,7 +29,7 @@ public class IHMLectRed
     private List<ObjetGraphique> lesRedacteurs = new LinkedList<ObjetGraphique>();
     private Map<ProcId,ObjetGraphique> lesProcessus = new HashMap<ProcId,ObjetGraphique>();
 
-    private Synchro.Simulateur simu;
+    private Simulateur simu;
     private LectRed lr;
 
     private static Random random = new Random();
@@ -304,7 +305,7 @@ public class IHMLectRed
 
     /****************************************************************/
     public IHMLectRed (LectRed _lr,
-                       Synchro.Simulateur _simu)
+                       Simulateur _simu)
     {
         nbLecteurs = 0;
         nbRedacteurs = 0;

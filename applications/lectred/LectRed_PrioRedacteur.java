@@ -1,9 +1,10 @@
+package applications.lectred;
 // Time-stamp: <08 Apr 2008 11:35 queinnec@enseeiht.fr>
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import Synchro.Assert;
+import applications.lectred.Synchro.Assert;
 
 /** Lecteurs/rédacteurs
  * stratégie d'ordonnancement: priorité aux rédacteurs,

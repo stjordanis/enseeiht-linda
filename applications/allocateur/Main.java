@@ -1,6 +1,7 @@
+package applications.allocateur;
 // Time-stamp: <02 mai 2013 10:28 queinnec@enseeiht.fr>
 
-import Synchro.Simulateur;
+import applications.allocateur.Synchro.Simulateur;
 
 public class Main
 {

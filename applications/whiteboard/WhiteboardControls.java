@@ -4,7 +4,7 @@
 **
 **/
 
-package linda.applications.whiteboard;
+package applications.whiteboard;
 
 import java.awt.event.*;
 import java.awt.*;

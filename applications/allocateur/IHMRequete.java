@@ -1,10 +1,11 @@
+package applications.allocateur;
 // Time-stamp: <03 mai 2013 11:13 queinnec@enseeiht.fr>
 
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import Synchro.Simulateur;
+import applications.allocateur.Synchro.Simulateur;
 
 public class IHMRequete extends JDialog {
 
@@ -15,7 +16,7 @@ public class IHMRequete extends JDialog {
     private JRadioButton demandButton, rendreButton;
     private JButton jb_ok;
     private IHMAllocateur allocX;
-    private Synchro.Simulateur simu;
+    private Simulateur simu;
 
     /** Mode == demande : pas de demande ni d'utilisation en cours
      *  Mode == cesser  : utilisation en cours.
@@ -37,7 +38,7 @@ public class IHMRequete extends JDialog {
         }
     }
 
-    public IHMRequete (Frame frame, Synchro.Simulateur _simu, IHMAllocateur _allocX)
+    public IHMRequete (Frame frame, Simulateur _simu, IHMAllocateur _allocX)
     {
         super(frame,"Requête",true);
         setLocationRelativeTo(frame);

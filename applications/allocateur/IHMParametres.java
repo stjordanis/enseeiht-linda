@@ -1,3 +1,4 @@
+package applications.allocateur;
 // Time-stamp: <03 mai 2013 11:13 queinnec@enseeiht.fr>
 
 import java.awt.*;

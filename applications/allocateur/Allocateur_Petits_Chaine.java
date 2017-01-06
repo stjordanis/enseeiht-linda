@@ -1,3 +1,4 @@
+package applications.allocateur;
 // Time-stamp: <10 jan 2011 13:36 queinnec@enseeiht.fr>
 
 import java.util.concurrent.locks.Lock;

@@ -1,3 +1,4 @@
+package applications.lectred;
 // Time-stamp: <02 Apr 2008 16:26 queinnec@enseeiht.fr>
 
 public interface LectRed {

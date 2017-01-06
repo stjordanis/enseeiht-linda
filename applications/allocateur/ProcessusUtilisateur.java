@@ -1,6 +1,7 @@
+package applications.allocateur;
 // Time-stamp: <21 Mar 2008 14:20 queinnec@enseeiht.fr>
 
-import Synchro.Simulateur;
+import applications.allocateur.Synchro.Simulateur;
 
 public class ProcessusUtilisateur extends Thread
 {

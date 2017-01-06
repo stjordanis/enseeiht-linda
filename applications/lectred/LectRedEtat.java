@@ -1,3 +1,4 @@
+package applications.lectred;
 // Time-stamp: <24 fév 2010 09:41 queinnec@enseeiht.fr>
 
 public enum LectRedEtat {

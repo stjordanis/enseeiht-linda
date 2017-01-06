@@ -244,7 +244,10 @@ public class CentralizedLinda implements Linda {
     	while(!notified && it.hasNext()){
     		templateTake = it.next();
     		if(t.matches(templateTake)){
-    			waitingTakes.get(templateTake).poll().signal();
+    			Condition lock = waitingTakes.get(templateTake).poll();
+    			if (lock != null) {
+					lock.signal();
+				}
 				notified = true;
 			}
     	}

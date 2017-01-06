@@ -1,3 +1,4 @@
+package applications.lectred;
 // Time-stamp: <03 mai 2013 11:12 queinnec@enseeiht.fr>
 
 import java.awt.*;

@@ -4,7 +4,7 @@
 **
 **/
 
-package linda.applications.whiteboard;
+package applications.whiteboard;
 
 import java.awt.*;
 
@@ -25,8 +25,8 @@ public class Whiteboard extends Panel {
         appFrame.setSize(WIDTH,HEIGHT);   
     
         setLayout(new BorderLayout());
-        WhiteboardPanel wp = new WhiteboardPanel(this, new server.LindaClient(serverURI));
-        add("Center", wp); 
+        //WhiteboardPanel wp = new WhiteboardPanel(this, new server.LindaClient(serverURI));
+        //add("Center", wp);
  
         appFrame.setVisible(true);
 

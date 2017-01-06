@@ -1,3 +1,4 @@
+package applications.allocateur;
 // v0.1 PQ (05/13) ; PM (10/14) : modification (mineure) messages
 
 import java.awt.*;
@@ -6,7 +7,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.Random;
 import java.util.Hashtable;
-import Synchro.Simulateur;
+import applications.allocateur.Synchro.Simulateur;
 //import java.awt.geom.*;
 
 enum Action {
@@ -26,7 +27,7 @@ public class IHMAllocateur
     private Random random = new Random();
 
     // le simulateur de temps
-    private Synchro.Simulateur simu;
+    private Simulateur simu;
 
     /** Nombre de processus. */
     public final int nbProcessus;
@@ -238,7 +239,7 @@ public class IHMAllocateur
     /** Initialise la fenêtre d'affichage pour le nombre de ressources et de
      * processus indiqués.
      */
-    public IHMAllocateur (String nomstrategie, int _nbproc, int _nbres, Synchro.Simulateur _simu)
+    public IHMAllocateur (String nomstrategie, int _nbproc, int _nbres, Simulateur _simu)
     {
         nbProcessus = _nbproc;
         nbRessources = _nbres;

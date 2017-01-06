@@ -28,7 +28,7 @@ public class IHMArgs extends JDialog {
             });
 
         /* ===== choix de l'implantation ===== */
-        final String[] choix = trouver_implantations("StrategiePhilo");
+        final String[] choix = trouver_implantations("applications.philo.StrategiePhilo");
         JPanel jp_implantation = new JPanel();
         JComboBox<?> jComboBox = new JComboBox<String>(choix);
         jComboBox.setSelectedIndex(implantation);
@@ -93,7 +93,7 @@ public class IHMArgs extends JDialog {
     {
         List<String> lesChoix = new LinkedList<String>();
         // Récupére les noms de fichier
-        String[] files = (new File(".")).list();
+        String[] files = (new File("bin/applications/philo")).list();
         // L'interface que les classes doivent implanter
         Class<?> interf = null;
         try {
@@ -106,15 +106,15 @@ public class IHMArgs extends JDialog {
         for (int i = 0; i < files.length; i++) {
             Class<?> implant;
             if (files[i].endsWith (".class")) {
-                String classname = files[i].substring (0, files[i].length()-6);
+                String classname = "applications.philo." + files[i].substring (0, files[i].length()-6);
                 try {
-                    implant = Class.forName (classname);
+                    implant = Class.forName(classname);
                 } catch (ClassNotFoundException e) {
                     implant = null;
                 }
-                if ((implant != null) && (! classname.equals(interfaceName)) && interf.isAssignableFrom (implant)) {
+                if ((implant != null) && (! classname.equals(interfaceName)) && interf.isAssignableFrom(implant)) {
                     // ok !
-                    lesChoix.add (classname);
+                    lesChoix.add(classname);
                 }
             }
         }
@@ -123,6 +123,6 @@ public class IHMArgs extends JDialog {
             System.out.println ("Aucune implantation de "+interfaceName+" trouvee !");
             System.exit (1);
         }
-        return lesChoix.toArray (new String[0]);
+        return lesChoix.toArray(new String[0]);
     }
 }

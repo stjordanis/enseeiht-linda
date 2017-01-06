@@ -1,9 +1,8 @@
 package applications.lectred;
 // Time-stamp: <08 Apr 2008 11:35 queinnec@enseeiht.fr>
 
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import outils.Monitor.Condition;
+import outils.Monitor;
 import applications.lectred.Synchro.Assert;
 
 /** Lecteurs/rédacteurs
@@ -11,7 +10,7 @@ import applications.lectred.Synchro.Assert;
  * implantation: avec un moniteur. */
 public class LectRed_PrioRedacteur implements LectRed
 {
-    private Lock moniteur = new ReentrantLock();
+    private Monitor moniteur = new Monitor();
     private Condition acces;
     private Condition lecture;
     private boolean ecriture;
@@ -57,7 +56,9 @@ public class LectRed_PrioRedacteur implements LectRed
         ecriture = false;
         acces.signal();
         if (nbRedacteursAttente == 0) {
-            lecture.signalAll();
+            for (int i = 0; i < nbLecteurs; i++) {
+                lecture.signal();
+            }
         }
         moniteur.unlock();
     }

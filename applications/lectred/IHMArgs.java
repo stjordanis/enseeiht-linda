@@ -31,7 +31,7 @@ public class IHMArgs extends JDialog {
             });
 
         /* ===== choix de l'implantation ===== */
-        final String[] choix = trouver_implantations("LectRed");
+        final String[] choix = trouver_implantations("applications.lectred.LectRed");
         JPanel jp_implantation = new JPanel();
         JComboBox<?> jComboBox = new JComboBox<String>(choix);
         jComboBox.setSelectedIndex(implantation);
@@ -104,7 +104,7 @@ public class IHMArgs extends JDialog {
         //String[] choix = {"Fifo", "PrioRedacteur", "SansStrategieHoare", "SansStrategieJava"};
         List<String> lesChoix = new LinkedList<String>();
         // Récupére les noms de fichier
-        String[] files = (new File(".")).list();
+        String[] files = (new File("bin/applications/lectred")).list();
         // L'interface que les classes doivent implanter
         Class<?> interf = null;
         try {
@@ -117,12 +117,13 @@ public class IHMArgs extends JDialog {
         for (int i = 0; i < files.length; i++) {
             Class<?> implant;
             if (files[i].endsWith (".class")) {
-                String classname = files[i].substring (0, files[i].length()-6);
+                String classname =  "applications.lectred." + files[i].substring (0, files[i].length()-6);
                 try {
                     implant = Class.forName (classname);
                 } catch (ClassNotFoundException e) {
                     implant = null;
                 }
+
                 if ((implant != null) && (! classname.equals(interfaceName)) && interf.isAssignableFrom (implant)) {
                     // ok !
                     lesChoix.add (classname);

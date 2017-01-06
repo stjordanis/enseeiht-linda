@@ -88,7 +88,7 @@ public class Main
 
     static public void initialiser (String nomImplantation, int _nblecteurs, int _nbredacteurs) {
 
-        lr = charger_implantation ("LectRed", nomImplantation);
+        lr = charger_implantation ("applications.lectred.LectRed", nomImplantation);
         if (lr == null) {
             System.err.println ("Abandon.");
             System.exit (1);

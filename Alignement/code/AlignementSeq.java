@@ -1,7 +1,15 @@
+
+
 //v0   3/1/17 (PM)
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
-import linda.*;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
+import linda.Linda;
+import linda.Tuple;
 
 //---------------------------------------------------------------------------------------
 public class AlignementSeq {
@@ -76,7 +84,7 @@ public class AlignementSeq {
         Sequence courant = null;
         Sequence cible = BDcibles.lire(position);
         Iterator<Sequence> it = BD.itérateur();
-
+        
         while (it.hasNext()) {
             courant = it.next();
             score = similitude(courant.lireSéquence().toCharArray(),cible.lireSéquence().toCharArray());
@@ -85,6 +93,7 @@ public class AlignementSeq {
                 résultat = score ;
             }
         }
+
         System.out.println("cible : "+cible.afficher());
         System.out.println("résultat ("+résultat+"/ "+
                            100*résultat/(cible.lireTailleSeq()*Sequence.correspondance('A','A'))+"%): "+res.afficher());
@@ -102,41 +111,49 @@ public class AlignementSeq {
          * traiter un volume de données supérieur à la mémoire disponible.
          */
 
-        int score=0;
         int résultat=0;
-        Sequence res = null;
         Sequence courant = null;
         Sequence cible = BDcibles.lire(position);
         Iterator<Sequence> it = BD.itérateur();
-        Tuple tCourant = null;
         Tuple tCible = null;
         Tuple tRes = null;
 
-        int nbTreads = 4;
-        int[] scoreThreads = new int[nbThreads];
-        Sequence seqThreads = new Sequence[nbThreads];
-
+        int nbThreads = 4;
+        List<FutureTask<Pair<Integer, Tuple>>> tasks = new ArrayList<FutureTask<Pair<Integer, Tuple>>>();
+        Pair<Integer, Tuple> pCourant = null;
+        
         //déposer la cible dans l'espace de tuples
         l.write(new Tuple("cible",cible.lireSéquence(),cible.afficher(),cible.lireTailleSeq()));
-
+        
         //déposer les séquences dans l'espace de tuples
         while (it.hasNext()) {
             courant = it.next();
             l.write(new Tuple("BD",courant.lireSéquence(),courant.afficher()));
         }
-
-        //chercher la meilleure similitude
-        /*tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
-        tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
-        while (tCourant != null) {
-            score = similitude(((String)tCourant.get(1)).toCharArray(),
-                               ((String)tCible.get(1)).toCharArray());
-            if (score > résultat) {
-                tRes = tCourant;
-                résultat = score ;
-            }
-            tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
-        }*/
+        
+        // Récupération de la cible
+        tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
+        
+        // Création des tasks
+        for(int i = 0; i < nbThreads; i++){
+        	tasks.add(new FutureTask<Pair<Integer, Tuple>>(new SimilitudeThread(l, tCible)));
+        }
+        
+        // Lancement des tasks
+        for(FutureTask<Pair<Integer, Tuple>> t : tasks){
+        	new Thread(t).start();
+        }
+        
+        // Récupération des valeurs des tasks
+        for(FutureTask<Pair<Integer, Tuple>> t : tasks){
+        	try {
+				pCourant = t.get();
+				if(pCourant.first() > résultat){
+					résultat = pCourant.first();
+					tRes = pCourant.second();
+				}
+			}catch(Exception e){}
+        }        
 
         System.out.println("cible : "+tCible.get(2));
         System.out.println("résultat ("+résultat+"/ "+
@@ -145,17 +162,22 @@ public class AlignementSeq {
         return résultat;
     }
 
-    private class Xxx implements Callable<Integer> {
+     private static class SimilitudeThread implements Callable<Pair<Integer, Tuple>> {
 
         private Linda l;
-        private int index;
+        private Tuple tCible;
 
-        public Xxx(Linda l){
+        public SimilitudeThread(Linda l, Tuple tCible){
             this.l = l;
+            this.tCible = tCible;
         }
 
-        public Integer call() {
-            tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
+        public Pair<Integer, Tuple> call() {
+            int score=0;
+            int résultat=0;
+            Tuple tCourant = null;
+            Tuple tRes = null;
+
             tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
             while (tCourant != null) {
                 score = similitude(((String)tCourant.get(1)).toCharArray(),
@@ -166,7 +188,26 @@ public class AlignementSeq {
                 }
                 tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
             }
-            return résultat;
+            return new Pair<Integer, Tuple>(résultat, tRes);
         }
     }
+     
+    private static class Pair<U,V> {
+    	
+    	    private U first;
+    	    private V second;
+
+    	    public Pair(U first, V second) {
+    	        this.first = first;
+    	        this.second = second;
+    	    }
+
+    	    public U first() {
+    	        return first;
+    	    }
+
+    	    public V second() {
+    	        return second;
+    	    }
+    	}
 }

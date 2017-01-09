@@ -60,7 +60,7 @@ public class AlignementSeq {
         fin = System.nanoTime();
         System.out.println("test mémoire monoactivité : durée = "+ (fin-départ) /1_000+
         												"µs -> résultat : " + résultat);
-                           
+
         départ = System.nanoTime();
         résultat = AlignementSeq.AMonoLinda(BDS,cible,0,linda);
         fin = System.nanoTime();
@@ -112,6 +112,10 @@ public class AlignementSeq {
         Tuple tCible = null;
         Tuple tRes = null;
 
+        int nbTreads = 4;
+        int[] scoreThreads = new int[nbThreads];
+        Sequence seqThreads = new Sequence[nbThreads];
+
         //déposer la cible dans l'espace de tuples
         l.write(new Tuple("cible",cible.lireSéquence(),cible.afficher(),cible.lireTailleSeq()));
 
@@ -122,7 +126,7 @@ public class AlignementSeq {
         }
 
         //chercher la meilleure similitude
-        tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
+        /*tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
         tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
         while (tCourant != null) {
             score = similitude(((String)tCourant.get(1)).toCharArray(),
@@ -132,12 +136,37 @@ public class AlignementSeq {
                 résultat = score ;
             }
             tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
-        }
+        }*/
 
         System.out.println("cible : "+tCible.get(2));
         System.out.println("résultat ("+résultat+"/ "+
                            100*résultat/(((Integer)tCible.get(3))*Sequence.correspondance('A','A'))
                            +"%): "+tRes.get(2));
         return résultat;
+    }
+
+    private class Xxx implements Callable<Integer> {
+
+        private Linda l;
+        private int index;
+
+        public Xxx(Linda l){
+            this.l = l;
+        }
+
+        public Integer call() {
+            tCible = l.take(new Tuple("cible", String.class, String.class, Integer.class));
+            tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
+            while (tCourant != null) {
+                score = similitude(((String)tCourant.get(1)).toCharArray(),
+                                   ((String)tCible.get(1)).toCharArray());
+                if (score > résultat) {
+                    tRes = tCourant;
+                    résultat = score ;
+                }
+                tCourant = l.tryTake(new Tuple("BD",String.class,String.class));
+            }
+            return résultat;
+        }
     }
 }

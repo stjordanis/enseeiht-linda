@@ -1,28 +1,23 @@
 package shm;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import linda.AsynchronousCallback;
+import linda.Callback;
+import linda.Linda;
+import linda.Tuple;
+
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import linda.AsynchronousCallback;
-import linda.Callback;
-import linda.Linda;
-import linda.Tuple;
-
 /** Shared memory implementation of Linda. */
-public class CentralizedLinda implements Linda {
+public class ThreadedCentralizedLinda implements Linda {
 	
 	private final int QUEUE_SIZE = 10;
 	
-	private List<Tuple> tuples = new ArrayList<>();
+	private TupleSpace tuples = new TupleSpace();
 	private Lock moniteur = new ReentrantLock();
 	private Map<Tuple, BlockingQueue<Condition>> waitingReads  = new HashMap<>();
 	private Map<Tuple, BlockingQueue<Condition>> waitingTakes  = new HashMap<>();
@@ -92,11 +87,7 @@ public class CentralizedLinda implements Linda {
     	}
 		Tuple res = null;
 		moniteur.lock();
-		for(Tuple t : tuples){
-			if(t.matches(template)){
-				res = t.deepclone();
-			}
-		}
+		res = tuples.get(template);
 		moniteur.unlock();
 		return res;
 	}
@@ -173,12 +164,12 @@ public class CentralizedLinda implements Linda {
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
     public void debug(String prefix){
-		for(Tuple t : tuples){
+		for(Tuple t : tuples) {
 			System.out.println(prefix + t.toString());
 		}
 	}
     
-    private Condition addWaitingRead(Tuple template){
+    private Condition addWaitingRead(Tuple template) {
     	Condition c = moniteur.newCondition();
 		waitingReads.putIfAbsent(template, new ArrayBlockingQueue<>(QUEUE_SIZE, true));
     	waitingReads.get(template).add(c);
@@ -231,6 +222,7 @@ public class CentralizedLinda implements Linda {
     		if(t.matches(templateTake)){
     			Condition lock = waitingTakes.get(templateTake).poll();
     			if (lock != null) {
+					System.out.println("TOTOTOTOTOTOTO");
 					lock.signal();
 				}
 				notified = true;

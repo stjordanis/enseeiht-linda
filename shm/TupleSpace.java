@@ -12,7 +12,7 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class TupleSpace implements Collection<Tuple> {
 
-    public static final int DEFAULT_NSPACE = 8;
+    public static final int DEFAULT_NSPACE = 4;
 
     private List<List<Tuple>> tuples = new ArrayList<>();
     private GetThread[] getThreads;
@@ -197,19 +197,24 @@ public class TupleSpace implements Collection<Tuple> {
     private static Tuple tuple;
     public Tuple get(Tuple template) {
         tuple = null;
-        barrier.reset();
+        //barrier.reset();
 
         for (List<Tuple> t : tuples) {
-            new GetThread(t, template, barrier).start();
+            for (Tuple tu : t) {
+                if (tu.matches(template)) {
+                    tuple = tu;
+                }
+            }
+            //new GetThread(t, template, barrier).start();
         }
 
-        try {
-            barrier.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (BrokenBarrierException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            barrier.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (BrokenBarrierException e) {
+//            e.printStackTrace();
+//        }
         return tuple;
     }
 

@@ -12,14 +12,32 @@ public class LindaTestTempsReadTake {
 	public static void main(String[] args) {
 		int nTuplesMax = 500000;
 		int nTuplesPas = 50000;
+		int nTests = 10;
 		long[] resu = new long[2];
 		
 		System.out.println("Nb Tuples       Tps Read (ms)       Tps Take (ms)");
 
 		for (int nTuples=nTuplesPas; nTuples<= nTuplesMax; nTuples+= nTuplesPas) {
-			resu = test(nTuples);
+			resu = testMoyenne(nTuples, nTests);
 			System.out.println(String.format("%9d%20d%20d", nTuples, resu[0], resu[1]));
 		}
+	}
+	
+	// Effectue une moyenne des résultats de nTests tests
+	public static long[] testMoyenne(int nTuple, int nTests) {
+		long[] resuMoyenne = new long[2];
+		long[] resuTest = new long[2];
+		
+		// Effectuer nTests tests
+		for (int i = 0; i < nTests; i++) {
+			resuTest = test(nTuple);
+			resuMoyenne[0] += resuTest[0];
+			resuMoyenne[1] += resuTest[1];
+		}
+		resuMoyenne[0] /= nTests;
+		resuMoyenne[1] /= nTests;
+		
+		return resuMoyenne;
 	}
 	
     public static long[] test(int nTuple) {    	

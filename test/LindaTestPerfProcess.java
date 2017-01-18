@@ -15,6 +15,7 @@ public class LindaTestPerfProcess {
 		int nProcessMax = 1000;
 		int nTuplesPas = 5000;
 		int nProcessPas = 100;
+		int nTests = 10;
 		long resu;
 		
 		System.out.println("Temps moyen d'éxécution de read par plusieurs threads simultanés en fonction  du nombre de tuples sur le serveur");
@@ -32,10 +33,23 @@ public class LindaTestPerfProcess {
 			System.out.println("");
 			System.out.print(String.format("%8d    ", nProcess));
 			for (int nTuples=nTuplesPas; nTuples<= nTuplesMax; nTuples+= nTuplesPas) {
-				resu = test(nTuples, nProcess);
+				resu = testMoyenne(nTuples, nProcess, nTests);
 				System.out.print(String.format("%10d", resu));
 			}
 		}
+	}
+	
+	// Effectue une moyenne des résultats de nTests tests
+	public static long testMoyenne(int nTuple, int nProcess, int nTests) {
+		long resuMoyenne = 0;
+		
+		// Effectuer nTests tests
+		for (int i = 0; i < nTests; i++) {
+			resuMoyenne += test(nTuple, nProcess);
+		}
+		resuMoyenne /= nTests;
+		
+		return resuMoyenne;
 	}
 	
     public static long test(int nTuple, int nProcess) {

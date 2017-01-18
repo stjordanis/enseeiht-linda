@@ -13,12 +13,26 @@ public class LindaTestPerfMemoire {
 	public static void main(String[] args) {
 		int nTuplesMax = 1000000;
 		int nTuplesPas = 50000;
+		int nTests = 10;
 		long[] resu = new long[nTuplesMax/nTuplesPas+1];
 		
 		for (int nTuples=nTuplesPas; nTuples<= nTuplesMax; nTuples+= nTuplesPas) {
-			resu[nTuples/nTuplesPas] = test(nTuples);
+			resu[nTuples/nTuplesPas] = testMoyenne(nTuples, nTests);
 			System.out.println("Temps pour "+ nTuples + " tuples : " + resu[nTuples/nTuplesPas]+" ms");
 		}
+	}
+	
+	// Effectue une moyenne des résultats de nTests tests
+	public static long testMoyenne(int nTuple, int nTests) {
+		long resuMoyenne = 0;
+		
+		// Effectuer nTests tests
+		for (int i = 0; i < nTests; i++) {
+			resuMoyenne += test(nTuple);
+		}
+		resuMoyenne /= nTests;
+		
+		return resuMoyenne;
 	}
 	
     public static long test(int nTuple) {    	

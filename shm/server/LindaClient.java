@@ -1,5 +1,6 @@
 package shm.server;
 
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -23,7 +24,11 @@ public class LindaClient implements Linda {
 
 	public LindaClient(String url) {
 
-		analyseURL(url);
+		try {
+			analyseURL(url);
+		} catch (MalformedURLException e1) {
+			throw new RuntimeException("URL invalide");
+		}
 
 		Registry registry;
 		try {
@@ -34,7 +39,7 @@ public class LindaClient implements Linda {
 		}
 	}
 
-	private void analyseURL(String url) {
+	private void analyseURL(String url) throws MalformedURLException {
 		this.host = "localhost";
 		this.port = 4000;
 		this.lindaImpl = "Linda";
@@ -133,21 +138,23 @@ public class LindaClient implements Linda {
 
 		private static final long serialVersionUID = 2L;
 		private Callback callback;
-
+		private Thread th;
+		private Tuple tupleCalled;
+		
 		public RemoteCallback(Callback callback) throws RemoteException {
 			this.callback = callback;
-			System.out.println("RemoteCallback created");
-			System.out.println(this);
+			this.th = new Thread() {
+				public void run() {
+					callback.call(tupleCalled);
+					System.out.println("Callback called");
+				}
+			};
 		}
 
 		public void call(final Tuple t) {
 			System.out.println("Callback called");
-			new Thread() {
-				public void run() {
-					callback.call(t);
-					System.out.println("Callback called");
-				}
-			}.start();
+			this.tupleCalled = t;
+			this.th.start();
 		}
 	}
 

@@ -1,15 +1,13 @@
 package shm.server;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
-import java.rmi.Naming;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
-import linda.AsynchronousCallback;
 import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
@@ -117,7 +115,8 @@ public class LindaClient implements Linda {
 	@Override
 	public void eventRegister(eventMode mode, eventTiming timing, Tuple template, Callback callback) {
 		try {
-			linda.eventRegister(mode, timing, template, new RemoteCallback(callback));
+			ClientCallback clientCallback = new ClientCallback(new RemoteCallbackImpl(callback));
+			linda.eventRegister(mode, timing, template, clientCallback);
 		} catch (RemoteException e) {
 			e.printStackTrace();
 		}
@@ -129,32 +128,6 @@ public class LindaClient implements Linda {
 			linda.debug(prefix);
 		} catch (RemoteException e) {
 			e.printStackTrace();
-		}
-	}
-
-
-
-	private class RemoteCallback extends UnicastRemoteObject implements Callback {
-
-		private static final long serialVersionUID = 2L;
-		private Callback callback;
-		private Thread th;
-		private Tuple tupleCalled;
-		
-		public RemoteCallback(Callback callback) throws RemoteException {
-			this.callback = callback;
-			this.th = new Thread() {
-				public void run() {
-					callback.call(tupleCalled);
-					System.out.println("Callback called");
-				}
-			};
-		}
-
-		public void call(final Tuple t) {
-			System.out.println("Callback called");
-			this.tupleCalled = t;
-			this.th.start();
 		}
 	}
 

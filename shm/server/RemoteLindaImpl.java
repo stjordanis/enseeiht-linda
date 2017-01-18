@@ -6,6 +6,7 @@ import linda.Linda.eventMode;
 import linda.Linda.eventTiming;
 import linda.Tuple;
 import shm.ThreadedCentralizedLinda;
+import shm.DecentralizedLinda;
 
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;

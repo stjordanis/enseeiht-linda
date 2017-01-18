@@ -5,7 +5,7 @@ import linda.Linda;
 import linda.Linda.eventMode;
 import linda.Linda.eventTiming;
 import linda.Tuple;
-import shm.ThreadedCentralizedLinda;
+import shm.CentralizedLinda;
 import shm.DecentralizedLinda;
 
 import java.rmi.registry.Registry;
@@ -26,7 +26,7 @@ public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda 
 	private Linda linda;
 
 	public RemoteLindaImpl() throws RemoteException {
-		linda = new ThreadedCentralizedLinda();
+		linda = new CentralizedLinda();
 	}
 
 	public static void main(String args[]) {
@@ -41,10 +41,6 @@ public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda 
 				Registry registry = LocateRegistry.createRegistry(port);
 				System.out.println("//localhost:" + port + "/Linda");
 				registry.bind("Linda", linda);
-				//System.out.println(registry.list()[0]);
-				//Linda lindaTest = (Linda) registry.lookup("Linda");
-				//lindaTest.write(new Tuple(1));
-				//System.out.println(linda.read(new Tuple(1)));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

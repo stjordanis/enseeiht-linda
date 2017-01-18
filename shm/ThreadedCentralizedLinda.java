@@ -5,7 +5,6 @@ import linda.Callback;
 import linda.Linda;
 import linda.Tuple;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;

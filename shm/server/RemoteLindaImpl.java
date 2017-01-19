@@ -2,31 +2,26 @@ package shm.server;
 
 import linda.Callback;
 import linda.Linda;
-import linda.Linda.eventMode;
-import linda.Linda.eventTiming;
 import linda.Tuple;
-import shm.CentralizedLinda;
 import shm.DecentralizedLinda;
 
 import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
-import java.rmi.Naming;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
 
-public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda {
+public class RemoteLindaImpl extends UnicastRemoteObject implements RemoteLinda, Linda {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Linda linda;
+	private DecentralizedLinda linda;
 
 	public RemoteLindaImpl() throws RemoteException {
-		linda = new CentralizedLinda();
+		linda = new DecentralizedLinda();
 	}
 
 	public static void main(String args[]) {

@@ -23,7 +23,7 @@ public class CentralizedLinda implements Linda {
 	private final int QUEUE_SIZE = 10;
 	
 	private List<Tuple> tuples = new ArrayList<>();
-	private Lock moniteur = new ReentrantLock();
+	protected Lock monitor = new ReentrantLock();
 	private Map<Tuple, BlockingQueue<Condition>> waitingReads  = new HashMap<>();
 	private Map<Tuple, BlockingQueue<Condition>> waitingTakes  = new HashMap<>();
 	private Map<Tuple, BlockingQueue<Callback>> waitingReadCallbacks = new HashMap<>();
@@ -34,10 +34,10 @@ public class CentralizedLinda implements Linda {
     	if(t == null){
     		throw new NullPointerException();
     	}
-    	moniteur.lock();
+    	monitor.lock();
 		tuples.add(t.deepclone());
 		notifyNewTuple(t);
-		moniteur.unlock();
+		monitor.unlock();
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
@@ -45,14 +45,14 @@ public class CentralizedLinda implements Linda {
     public Tuple take(Tuple template){
     	Tuple res = null;
 		Condition c;
-		moniteur.lock();
+		monitor.lock();
 		while((res = tryTake(template)) == null){
 			c = addWaitingTake(template);
 			try {
 				c.await();
 			}catch(InterruptedException e){}
 		}
-		moniteur.unlock();
+		monitor.unlock();
 		return res;
 	}
 
@@ -61,26 +61,26 @@ public class CentralizedLinda implements Linda {
     public Tuple read(Tuple template){
 		Tuple res = null;
 		Condition c;
-		moniteur.lock();
+		monitor.lock();
 		while((res = tryRead(template)) == null){
 			c = addWaitingRead(template);
 			try {
 				c.await();
 			}catch(InterruptedException e){}
 		}
-		moniteur.unlock();
+		monitor.unlock();
 		return res;
 	}
 
     /** Returns a tuple matching the template and removes it from the tuplespace.
      * Returns null if none found. */
     public Tuple tryTake(Tuple template){
-    	moniteur.lock();
+		monitor.lock();
 		Tuple res = tryRead(template);
 		if(res != null){
 			tuples.remove(res);
 		}
-		moniteur.unlock();
+		monitor.unlock();
 		return res;
 	}
 
@@ -91,13 +91,13 @@ public class CentralizedLinda implements Linda {
     		throw new NullPointerException();
     	}
 		Tuple res = null;
-		moniteur.lock();
+		monitor.lock();
 		for(Tuple t : tuples){
 			if(t.matches(template)){
 				res = t.deepclone();
 			}
 		}
-		moniteur.unlock();
+		monitor.unlock();
 		return res;
 	}
 
@@ -125,14 +125,14 @@ public class CentralizedLinda implements Linda {
     	if(template == null){
     		throw new NullPointerException();
     	}
-		Collection<Tuple> res = new ArrayList<Tuple>();		
-		moniteur.lock();
+		Collection<Tuple> res = new ArrayList<Tuple>();
+		monitor.lock();
 		for(Tuple t : tuples){
 			if(t.matches(template)){
 				res.add(t);
 			}
 		}
-		moniteur.unlock();
+		monitor.unlock();
 		return res;
 	}
 
@@ -153,8 +153,7 @@ public class CentralizedLinda implements Linda {
     	if(template == null){
     		throw new NullPointerException();
     	}
-    	new Thread(){
-    		public void run(){
+    	new Thread(() -> {
 	    		Tuple t = null;
 		    	if(mode == eventMode.READ && timing == eventTiming.IMMEDIATE){
 		    		t = read(template);
@@ -168,7 +167,7 @@ public class CentralizedLinda implements Linda {
 		    		addWaitingTakeCallback(new TakeCallback(callback), template);
 		    	}
     		}
-	    }.start();
+		).start();
 	}
 
     /** To debug, prints any information it wants (e.g. the tuples in tuplespace or the registered callbacks), prefixed by <code>prefix</code. */
@@ -179,14 +178,14 @@ public class CentralizedLinda implements Linda {
 	}
     
     private Condition addWaitingRead(Tuple template){
-    	Condition c = moniteur.newCondition();
+    	Condition c = monitor.newCondition();
 		waitingReads.putIfAbsent(template, new ArrayBlockingQueue<>(QUEUE_SIZE, true));
     	waitingReads.get(template).add(c);
     	return c;
     }
     
     private Condition addWaitingTake(Tuple template){
-    	Condition c = moniteur.newCondition();
+    	Condition c = monitor.newCondition();
 		waitingTakes.putIfAbsent(template, new ArrayBlockingQueue<>(QUEUE_SIZE, true));
     	waitingTakes.get(template).add(c);
     	return c;
@@ -202,7 +201,7 @@ public class CentralizedLinda implements Linda {
     	waitingTakeCallbacks.get(template).add(callback);
     }
     
-    private void notifyNewTuple(Tuple t){
+    protected void notifyNewTuple(Tuple t){
     	boolean notified = false;
     	Condition c;
     	Callback cb;
@@ -247,11 +246,9 @@ public class CentralizedLinda implements Linda {
     }
     
     private void runCallback(Callback c, Tuple t){
-    	new Thread(){
-            public void run(){
-		    	c.call(t);
-            }
-    	}.start();
+    	new Thread(() -> {
+    		c.call(t);
+		}).start();
     }
     
     private class TakeCallback implements Callback {
@@ -263,9 +260,9 @@ public class CentralizedLinda implements Linda {
     	}
     	
 		public void call(Tuple t) {
-			moniteur.lock();
+			monitor.lock();
 			tuples.remove(t);
-			moniteur.unlock();
+			monitor.unlock();
 			c.call(t);
 		}
     }

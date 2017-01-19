@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Collection;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,10 +28,15 @@ public class LindaTakeAllTest {
 	@Before
 	public void setUp() {
 		//linda = new tshm.CentralizedLinda();
-		linda = new shm.CentralizedLinda();	
-        // linda = new server.LindaClient("//localhost:4000/aaa");
+		//linda = new shm.CentralizedLinda();	
+        linda = new shm.server.LindaClient("//localhost:4000/Linda");
 	}
 
+	@After
+	public void cleanUp() {
+        linda.takeAll(motif);
+        linda.takeAll(tupleVide);
+	}
 
 	@Test(timeout=1000)
 	public void testTakeAllTuple() {

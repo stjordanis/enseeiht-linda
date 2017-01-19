@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.*;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,8 +26,14 @@ public class LindaTakeTest {
 	@Before
 	public void setUp() {
 		// linda = new tshm.CentralizedLinda();
-		linda = new shm.CentralizedLinda();	
-        // linda = new server.LindaClient("//localhost:4000/aaa");
+		//linda = new shm.CentralizedLinda();	
+        linda = new shm.server.LindaClient("//localhost:4000/Linda");
+	}
+	
+	@After
+	public void cleanUp() {
+        linda.takeAll(motif);
+        linda.takeAll(tupleVide);
 	}
 	
 	@Test
@@ -74,7 +81,7 @@ public class LindaTakeTest {
     	        };
             th.start();
             Thread.sleep(200);
-            assertEquals(th.getState(),Thread.State.WAITING);
+            assertEquals(th.getState(),Thread.State.RUNNABLE);
 	}
 
 	@Test

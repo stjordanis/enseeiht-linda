@@ -19,12 +19,11 @@ public class BasicTestCallback {
 
     public static void main(String[] a) {
 
-        Linda linda = new shm.CentralizedLinda();
-        //Linda linda = new server.LindaClient("//localhost:4000/MonServeur");
+        //Linda linda = new shm.CentralizedLinda();
+        Linda linda = new shm.server.LindaClient("//localhost:4000/Linda");
 
         Tuple motif = new Tuple(Integer.class, String.class);
-        linda.eventRegister(eventMode.TAKE, eventTiming.IMMEDIATE, motif, new MyCallback());
-
+ 
         Tuple t1 = new Tuple(4, 5);
         System.out.println("(2) write: " + t1);
         linda.write(t1);

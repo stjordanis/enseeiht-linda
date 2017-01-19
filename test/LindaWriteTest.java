@@ -10,6 +10,7 @@ import java.io.PrintStream;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.After;
 import org.junit.Before;
 
 import linda.*;
@@ -30,8 +31,16 @@ public class LindaWriteTest {
 	@Before
 	public void setUp() {
 		// linda = new linda.tshm.CentralizedLinda();
-		linda = new shm.CentralizedLinda();	
-        // linda = new linda.server.LindaClient("//localhost:4000/aaa");
+		// linda = new shm.ThreadedCentralizedLinda();	
+        linda = new shm.server.LindaClient("//localhost:4000/Linda");
+        linda.takeAll(motif);
+        linda.takeAll(tupleVide);
+	}
+	
+	@After
+	public void cleanUp() {
+        linda.takeAll(motif);
+        linda.takeAll(tupleVide);
 	}
 	
 	@Test
